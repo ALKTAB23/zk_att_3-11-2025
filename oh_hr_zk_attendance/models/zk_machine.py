@@ -451,17 +451,9 @@ class ZkMachine(models.Model):
                     for each in attendance:
                         # logging.info("att>>>>>"+str(each.punch)+"__"+str(self.checkin_read_key)+"_")
                         if str(each.punch) == str(self.checkin_read_key) or str(each.punch) == str(self.checkout_read_key):
-                            # تحويل الوقت بشكل صحيح
-                            try:
-                                atten_time = each.timestamp
-                                # إذا كان الوقت يحتاج timezone adjustment
-                                if hasattr(each.timestamp, 'tzinfo') and each.timestamp.tzinfo is None:
-                                    atten_time = pytz.utc.localize(each.timestamp).astimezone(pytz.UTC).replace(tzinfo=None)
-                                else:
-                                    atten_time = each.timestamp
-                            except Exception as e:
-                                _logger.error(f"خطأ في معالجة الوقت: {str(e)}")
-                                atten_time = each.timestamp
+                            # الوقت من الجهاز هو الوقت المحلي مباشرة - لا يحتاج تحويل
+                            atten_time = each.timestamp
+                            _logger.debug(f"وقت البصمة الأصلي من الجهاز: {atten_time}")
                             if user:
                                 # for uid in user:
                                 if each.user_id in users_list:
