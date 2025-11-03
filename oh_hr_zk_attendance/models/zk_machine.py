@@ -399,21 +399,28 @@ class ZkMachine(models.Model):
                     if self.fetch_data_setting == 'range':
                         if self.to_date:
                             _logger.info(f"قراءة السجلات من {self.from_date} إلى {self.to_date}")
+                            _logger.info(f"إعداد الجلب: fetch_data_setting={self.fetch_data_setting}")
                             attendance = conn.get_attendance(
                                 start_date=str(self.from_date),
                                 end_date=str(self.to_date),
                                 policy='range'
                             )
                         else:
-                            _logger.info(f"قراءة السجلات من {self.from_date}")
+                            _logger.info(f"قراءة السجلات من {self.from_date} فقط (بدون تاريخ نهاية)")
                             attendance = conn.get_attendance()
                     else:
-                        _logger.info("قراءة جميع السجلات")
+                        _logger.info("قراءة جميع السجلات (policy='all')")
                         attendance = conn.get_attendance(policy='all')
                     
-                    # تسجيل نتيجة القراءة
+                    # تسجيل نتيجة القراءة بالتفصيل
                     if attendance:
                         _logger.info(f"✓ نجحت القراءة: تم استرجاع {len(attendance)} سجل حضور")
+                        if len(attendance) > 0:
+                            # عرض أول وآخر سجل للتأكد من النطاق
+                            first_record = attendance[0]
+                            last_record = attendance[-1]
+                            _logger.info(f"  أول سجل: {first_record.timestamp} - {first_record.user_id}")
+                            _logger.info(f"  آخر سجل: {last_record.timestamp} - {last_record.user_id}")
                     else:
                         _logger.warning("⚠ لا توجد سجلات حضور جديدة في الجهاز")
                         
