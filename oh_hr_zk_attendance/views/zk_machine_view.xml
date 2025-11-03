@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_zk_machine_form" model="ir.ui.view">
+        <field name="name">zk.machine.form</field>
+        <field name="model">zk.machine</field>
+        <field name="arch" type="xml">
+            <form string="Biometric Device">
+                <header>
+                    <button name="clear_attendance" type="object" string="Clear Data" class="oe_highlight"
+                                icon="fa-remove " confirm="Are you sure you want to do this?"/>
+                    <button name="download_attendance" type="object" string="Download Data" class="oe_highlight"
+                            icon="fa-download " confirm="Are you sure you want to do this?" />
+                    <button name="enable_dis_sched" type="object" string="Disable/Enable Schedular" class="oe_highlight"
+                            icon="fa-power-off " confirm="Are you sure you want to do this?" />
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" />
+                        <h1>
+                            <field name="name" placeholder="Machine IP"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="port_no"/>
+                            <field name="address_id"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="log_by_check_in_check_out" widget="radio" />
+                        </group>
+                        <group>
+                            <field name="fetch_data_setting" widget="radio" />
+                            <field name="from_date" attrs="{'invisible':[('fetch_data_setting','=','all')]}" />
+                            <field name="to_date" attrs="{'invisible':[('fetch_data_setting','=','all')]}" />
+                        </group>
+                        <group>
+                            <field name="read_tz"/>
+                            <field name="checkin_read_key" />
+                            <field name="checkout_read_key" />
+                            <field name="schedule_action" /> 
+                            
+                        </group>
+                        <group colsapn="4">
+                             
+	                     <field name="interval_n" />
+	                     <field name="interval_t" />
+	                     <field name="lastcall" />
+	                     <field name="nextcall" />
+                         <field name="is_active" />
+	                     </group>
+	                 <group string="Update Schedular">
+	                     <field name="interval_set" />
+	                     <field name="interval_t_set"/>
+                         <field name="set_nextcall" />
+	                     <button string="Update Interval" type="object" name="update_interval" class="oe_highlight"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_zk_machine_tree" model="ir.ui.view">
+        <field name="name">zk.machine.tree</field>
+        <field name="model">zk.machine</field>
+        <field name="arch" type="xml">
+            <tree string="Biometric Machine">
+                <field name="name"/>
+                <field name="port_no"/>
+                <field name="address_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_zk_machine_readings_tree" model="ir.ui.view">
+        <field name="name">zk.machine.reading.tree</field>
+        <field name="model">attendance_types_readings</field>
+        <field name="arch" type="xml">
+            <tree string="Reading Categories">
+                <field name="code"/>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="zk_machine_action" model="ir.actions.act_window">
+        <field name="name">Attendances</field>
+        <field name="res_model">zk.machine</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="zk_machine_reading_action" model="ir.actions.act_window">
+        <field name="name">ZK Reading Categories</field>
+        <field name="res_model">attendance_types_readings</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="hr_employee_inherit_form_view" model="ir.ui.view">
+        <field name="name">hr.employee.form</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='hr_settings']//field[@name='user_id']" position="after">
+                <field name="device_ids" colspan="3" width="100%">
+                    <tree editable="bottom">
+                        <field name="machine_ip" width="30%" />
+                        <field name="device_id" width="50%" />
+                    </tree>
+                </field>
+            </xpath>
+        </field>
+    </record>
+
+    <menuitem id="zk_machine_menu" parent="hr_attendance.menu_hr_attendance_root" sequence="50" name="Biometric Manager" />
+    <menuitem id="zk_machine_sub_menu" parent="zk_machine_menu"  name="Device Configuration" action="zk_machine_action" sequence="1"/>
+    <menuitem id="zk_machine_conf_sub" parent="zk_machine_menu"  name="ZK Reading Category" action="zk_machine_reading_action" sequence="1"/>
+</odoo>
+

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<odoo noupdate="0">
+    <record id="finger_1" model="attendance_types_readings">
+            <field name="code">1</field>
+            <field name="name">Finger</field>
+    </record>
+    <record id="face_1" model="attendance_types_readings">
+            <field name="code">15</field>
+            <field name="name">Face</field>
+    </record>
+    <record id="type_2_1" model="attendance_types_readings">
+            <field name="code">25</field>
+            <field name="name">Type_2</field>
+    </record>
+    <record id="password_1" model="attendance_types_readings">
+            <field name="code">3</field>
+            <field name="name">Password</field>
+    </record>
+    <record id="card_1" model="attendance_types_readings">
+            <field name="code">4</field>
+            <field name="name">Card</field>
+    </record>
+    <record id="Finger_1" model="attendance_types_readings">
+            <field name="code">255</field>
+            <field name="name">Finger</field>
+    </record>
+</odoo>
