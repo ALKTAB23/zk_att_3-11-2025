@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <record id="custom_hr_contract_type_tree" model="ir.ui.view">
+          <field name="name">custom_hr_contract_type_view_tree</field>
+          <field name="model">hr.contract.type</field>
+          <field name="inherit_id" ref="hr.hr_contract_type_view_tree"/>
+          <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="is_primary" />
+            </field>
+          </field>
+      </record>
+      
+
+    <record id="custom_hr_contract_type_view_form" model="ir.ui.view">
+          <field name="name">custom_hr_contract_type_view_form</field>
+          <field name="model">hr.contract.type</field>
+          <field name="inherit_id" ref="hr.hr_contract_type_view_form"/>
+          <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="is_primary" />
+            </field>
+          </field>
+      </record>
+
+    <record id="view_base_employee_contract_customn_form" model="ir.ui.view">
+          <field name="name">base.hr_contract.view.form</field>
+          <field name="model">hr.contract</field>
+          <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+          <field name="arch" type="xml">
+                <xpath expr="//field[@name='schedule_pay']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+               <!--  <xpath expr="//span[@class='o_calendar_warning_tooltip text-danger']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath> -->
+               <!--  <xpath expr="//span[@class='fa fa-exclamation-triangle text-danger o_calendar_warning pl-3']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath> -->
+                
+                <xpath expr="//label[@for='resource_calendar_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='resource_calendar_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+        </field>
+    </record> 
+   
+
+    <record id="view_hr_employee_contract_customn_form" model="ir.ui.view">
+      <field name="name">hr_employee_contract_custom.view.form</field>
+      <field name="model">hr.contract</field>
+      <field name="inherit_id" ref="hr_employee_shift.employee_contract_form_inherited"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='hr_responsible_id']" position="after">
+            <field name="manual_avg" />
+            <field name="fix_hours_per_day" widget="float_time" attrs="{'invisible':[('manual_avg','=',False)]}"/> 
+            <field name="hours_per_day" widget="float_time" attrs="{'readonly':[('manual_avg','=',False)],'invisible':[('manual_avg','=',True)]}"/>
+        </xpath>
+        <xpath expr="//field[@name='shift_schedule']" position="attributes">
+            <attribute name="invisible">True</attribute>
+        </xpath>
+        <xpath expr="//notebook" position="before">
+            <group colspan="2" string="Shift Schedule">
+                        <field name="shift_schedule" nolabel="1" colspan="2" >
+                            <tree editable="1">
+                                <field name="start_date"/>
+                                <field name="end_date" width="30%"/>
+                                <field name="hr_shift"/>
+                                <field name="active" />
+                            </tree>
+                        </field>
+                    </group>
+        </xpath>
+        <xpath expr="//notebook" position="inside">
+            <page string="Shifts Requests" name="shift_requests">
+                <group  string="Requests of Shifts Schedule" colspan="2">
+                <field name="shift_schedule2" nolabel="1" colspan="2">
+                    <tree>
+                        <field name="hr_shift" />
+                        <field name="day_period" />
+                        <field name="hour_from" widget="float_time"/>
+                        <field name="hour_to" widget="float_time"/>
+                        <field name="request_id" />
+                        <field name="start_date" string="Shift Date" />
+                        <field name="state" />
+                        
+                    </tree>
+                </field>
+                </group>
+            </page>
+
+         </xpath>
+        
+         <xpath expr="//field[@name='shift_schedule']/tree/field[@name='hr_shift']" position="after">
+            
+            <field name="active" />
+            
+         </xpath>
+        
+      </field>
+    </record> 
+    
+    <record id="view_hr_contract_form_customn" model="ir.ui.view">
+      <field name="name">hr_employee_contract_custom.view.form</field>
+      <field name="model">hr.contract</field>
+      <field name="inherit_id" ref="hr_attendance_sheet.hr_contract_form"/>
+      <field name="arch" type="xml">
+        
+         <xpath expr="//field[@name='att_policy_id']" position="attributes">
+            <attribute name="invisible">1</attribute>
+         </xpath>
+         
+      </field>
+    </record>
+    <record id="view_hr_employee_hide_resource_form" model="ir.ui.view">
+      <field name="name">hr_employee_hide_resource.view.form</field>
+      <field name="model">hr.employee</field>
+      <field name="inherit_id" ref="hr_contract.hr_hr_employee_view_form2"/>
+      <field name="arch" type="xml">
+            <xpath expr="//field[@name='resource_calendar_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='calendar_mismatch']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//label[@for='resource_calendar_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <!-- <xpath expr="//span[@class='fa fa-exclamation-triangle text-danger o_calendar_warning pl-3']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//span[@class='o_calendar_warning_tooltip text-danger']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath> -->
+      </field>
+    </record>
+    
+</data>
+</odoo>

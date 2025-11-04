@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="report_accumlate_payroll">
+              <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                <!-- <t t-foreach="docs" t-as="o"> -->
+                    <div class="page">
+                        
+                        <h3 style="text-decoration:underline;text-align:center;"><b>Accumlate Payslip Report</b></h3>
+                        <br/>
+                        
+                        <table width="99%" style=";margin-top:5px;border: None solid black;">
+                            <tr>
+                                <td style="width:50px;height:25px" ><span><strong>Date From:</strong></span></td>
+                                <td style="width:50px;height:25px" ><span><strong>Date To:</strong></span></td>
+                                <td style="width:50px;height:25px" ><span><strong>Salary Rule:</strong></span></td>                                
+                            </tr>
+                            <tr>
+                                <td><span t-att-style="style" t-esc="from_date"/></td>
+                                <td><span t-att-style="style" t-esc="to_date"/></td>
+                                <td><span t-att-style="style" t-esc="salary_rule"/></td>
+                            </tr>
+                        </table>
+                        <br/>
+                        
+                         <table width="99%" style="border:1px solid black;padding-left:1.16cm;">
+                             <thead>
+                                <th style="border:1px solid black;text-align:center;background-color:#d6d2d2" width="13%" class="td4">Employee</th>
+                                <th style="border:1px solid black;text-align:center;background-color:#d6d2d2" width="13%" class="td4">Total</th>
+                                
+                            </thead>
+                            <tbody>
+                                <t t-set="total_v" t-value="0" />
+                                <t t-foreach="lines" t-as="l">
+                                        <tr style="border:1px solid black">
+                                            <td style="border:1px solid black;text-align:center;"><span t-esc="l_value['name']" style="font-size:16px;"/></td>
+                                            <td style="border:1px solid black;text-align:center;"><span t-esc="l_value['total']" style="font-size:16px;"/></td>
+                                        </tr>
+                                        <t t-set="total_v" t-value="total_v+l_value['total']" />
+                                </t>
+                                <tr>
+                                    <td style="border:1px solid black;text-align:center;background-color:#d6d2d2">Total</td>
+                                            <td style="border:1px solid black;text-align:center;background-color:#d6d2d2"><span t-esc="total_v" style="font-size:16px;"/></td>
+                                </tr>
+                            </tbody>
+                         </table>
+                    </div>                    
+                    </t>
+                </t>
+              
+        </template>
+    </data>
+</odoo>

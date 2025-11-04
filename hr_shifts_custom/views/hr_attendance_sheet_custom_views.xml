@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_base_employee_contract_customn_form" model="ir.ui.view">
+          <field name="name">hr_attendance_sheet_custom.view.form</field>
+          <field name="model">attendance.sheet</field>
+          <field name="inherit_id" ref="hr_attendance_sheet.attendance_sheet_form_view"/>
+          <field name="arch" type="xml">
+                <xpath expr="//field[@name='att_sheet_line_ids']/tree" position="attributes">
+                  <attribute name="create">1</attribute>
+                  <attribute name="editable">bottom</attribute>
+                  <attribute name="readonly">0</attribute>
+                </xpath>
+                <xpath expr="//notebook" position="inside">
+                  <page string="Ready Attendances">
+                    <field name="correct_att_sheet_line_ids" >
+                        <tree>
+                            <field name="date"/>
+                            <field name="day"/>
+                            <field name="pl_sign_in" string="Planned-In" widget="float_time"/>
+                            <field name="pl_sign_out" string="Planned-Out" widget="float_time"/>
+                            <field name="ac_sign_in" string="Actual-In" widget="float_time"/>
+                            <field name="ac_sign_out" string="Actual-Out" widget="float_time"/>
+                            <field name="worked_hours" widget="float_time" sum="Quantity"/>
+                             <field name="act_late_in"  widget="float_time" sum="Quantity"/>
+                            <field name="late_in" widget="float_time" sum="Quantity"/>
+                            <!-- <field name="act_overtime" groups="base.group_no_one" widget="float_time" sum="Quantity"/> -->
+                            <field name="overtime" widget="float_time" sum="Quantity"/>
+                            <field name="act_diff_time"    widget="float_time" sum="Quantity"/>
+                            <field name="diff_time" widget="float_time" sum="Quantity"/>
+                            <field name="status"/>
+                            <field name="line_att_policy_id"/>
+                            <field name="hr_action" />
+                            <field name="note"/>
+                        </tree>
+                    </field>
+                  </page>
+                  
+                </xpath>
+                <xpath expr="//notebook/page/field[@name='att_sheet_line_ids']" position="attributes">
+                  <attribute name="attrs">{}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='att_sheet_line_ids']/tree/button[@class='oe_stat_button']" position="attributes">
+                  <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='att_policy_id']" position="after">
+                  <field name="sheet_action" />
+                </xpath>
+                <xpath expr="//field[@name='att_policy_id']" position="attributes">
+                  <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='att_sheet_line_ids']/tree/field[@name='state']" position="attributes">
+                  <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='att_sheet_line_ids']" position="before">
+                    <group>
+                        <field name="default_hr_action" string="Apply Batch HR Action" />
+                        <button name="apply_batch_action" states="draft" string="Apply" type="object"
+                                class="oe_highlight" groups="hr_attendance_sheet.group_attendance_sheet_manager"/>
+                    </group>
+                </xpath>
+                <xpath expr="//field[@name='att_sheet_line_ids']/tree/field[@name='status']" position="after">
+                  <field name="line_att_policy_id"/>
+                  <field name="hr_action" />
+                </xpath>
+                <xpath expr="//notebook/page[2]/group[1]/group/field[@name='tot_late']" position="after">
+                    <field name="late_policy_hours" widget="float_time"/>
+                </xpath> 
+                <xpath expr="//notebook/page[2]/group[1]/group/field[@name='tot_difftime']" position="after">
+                    <field name="diff_policy_hours" widget="float_time"/>
+                </xpath>
+                <xpath expr="//notebook/page[2]/group[1]" position="inside">
+                    <group string="Worked Time">
+                        <field name="no_wd"/>
+                        <field name="tot_wh" widget="float_time"/>
+                    </group>
+                    <group string="Forget Attendance">
+                        <field name="no_forget" />
+                        <field name="forget_hours" widget="float_time" />
+                    </group>
+                    <group string="Leaves">
+                        <field name="no_leaves"/>
+                        <field name="no_leaves_h" />
+                    </group>
+                    <group string="Public Holidays">
+                        <field name="no_ph" />
+                    </group>
+
+                </xpath>
+                <xpath expr="//notebook/page[2]" position="inside">
+                    
+                        <field name="leaves_ids" colspan="2" readonly="True" nolabel="1">
+                            <tree>
+                                <field name="leave_type" width="20%" />
+                                <field name="total_days" width="40%"/>
+                                <field name="total_hours" width="40%"/>
+                            </tree>
+                        </field>
+                    
+                </xpath>
+                <xpath expr="//form/header/button[@name='action_attsheet_draft']" position="attributes">
+                    <attribute name="states">confirm,done</attribute>
+                </xpath>
+          </field>
+        </record>
+
+
+        <record id="view_batch_attendance_sheet_customn_form" model="ir.ui.view">
+          <field name="name">batch_hr_attendance_sheet_custom.view.form</field>
+          <field name="model">batch.attendance.sheet</field>
+          <field name="arch" type="xml">
+                <form>
+                  <header>
+                        <button name="get_attendances_sheets" string="Get Attendances Sheets" class="oe_highlight" states="draft"
+                                type="object"/>
+                         <!-- <button name="calculate_att_data" string="Compute Attendance Data" class="oe_highlight" states="confirm"
+                                type="object"/> -->
+                        
+                        <button name="action_attsheet_approve" states="confirm" string="Approve" type="object"
+                                class="oe_highlight" groups="hr_attendance_sheet.group_attendance_sheet_manager"/>
+                        
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1>
+                              <field name="name" attrs="{'readonly':[('state','!=','draft')]}"/>
+                            </h1>
+                        </div>
+                        <group>
+                          <field name="filter_option" widget="radio" />
+                            <field name="department_ids" strint="Departments" widget="many2many_tags" attrs="{'readonly':[('state','!=','draft')]}"/>
+                            <field name="employee_ids" placeholder="Employees" attrs="{'readonly':[('state','!=','draft')],'invisible':[('filter_option','!=','emp')]}" widget="many2many_tags" domain="[('department_id','child_of',department_ids)]"/>
+                            <field name="category_ids" widget="many2many_tags" attrs="{'readonly':[('state','!=','draft')],'invisible':[('filter_option','=','emp')]}"/>
+
+                            <label for="date_from" string="Period"/>
+                            <div>
+                                <field name="date_from" class="oe_inline" attrs="{'readonly':[('state','!=','draft')]}"/>
+                                -
+                                <field name="date_to" class="oe_inline" attrs="{'readonly':[('state','!=','draft')]}"/>
+                            </div>
+                        </group>
+                        
+                        <notebook>
+
+                            <page string="To Validate">
+                                <group>
+                                    <button name="action_attsheet_confirm" states="confirm" string="Submit to Manager" type="object"
+                                    class="oe_highlight"/>
+                                </group>
+                                <field name="records_to_validate" >
+                                    <form>
+                                        <field name="employee_id"/>
+                                        <field name="sheet_ids_to_validate" >
+                                            <tree>
+                                                <field name="employee_id"/>
+                                                <field name="contract_id"/>
+                                                <field name="date_from"/>
+                                                <field name="date_to"/>
+                                            </tree>
+                                        </field>
+                                    </form>
+                                    <tree>
+                                        <field name="employee_id"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Ready to Approve">
+                                <group>
+                                    <field name="default_sheet_action" string="Batch default Sheet Action" />
+                                </group>
+                                <field name="records_to_approve" >
+                                    <form>
+                                        <field name="employee_id"/>
+                                        <field name="sheet_ids_to_approve" >
+                                            <tree>
+                                                <field name="employee_id"/>
+                                                <field name="contract_id"/>
+                                                <field name="date_from"/>
+                                                <field name="date_to"/>
+                                            </tree>
+                                        </field>
+                                    </form>
+                                    <tree>
+                                        <field name="employee_id"/>
+                                    </tree>
+                                </field>
+                                    
+                              </page>
+                              <page string="Approved">
+                                <field name="records_approved" attrs="{'readonly':[('state','!=','draft')]}">
+                                    <form>
+                                        <field name="sheet_ids_approved" >
+                                            <tree>
+                                                <field name="employee_id"/>
+                                                <field name="contract_id"/>
+                                                <field name="date_from"/>
+                                                <field name="date_to"/>
+                                            </tree>
+                                        </field>
+                                    </form>
+                                    <tree>
+                                        <field name="employee_id"/>
+                                    </tree>
+                                </field>
+                                    
+                              </page>
+                            
+                        </notebook>
+                    </sheet>
+                </form>
+          </field>
+        </record>
+
+        <record id="batch_attendance_sheet_tree_view" model="ir.ui.view">
+            <field name="name">batch_attendance.sheet.tree.view</field>
+            <field name="model">batch.attendance.sheet</field>
+            <field name="arch" type="xml">
+                <tree string="">
+                    <field name="name"/>
+                    <!-- <field name="employee_id"/>                     -->
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <field name="state"/>
+
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_batch_attendance_sheet_process" model="ir.actions.act_window">
+            <field name="name">Batch Attendance Sheets</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">batch.attendance.sheet</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    <!-- Add Text Here -->
+                </p>
+                <p>
+                    <!-- More details about what a user can do with this object will be OK -->
+                </p>
+            </field>
+        </record>
+         <record model="ir.actions.act_window.view" id="action_batch_sheet_tree">
+                <field name="sequence" eval="2"/>
+                <field name="view_mode">tree</field>
+                <field name="view_id" ref="batch_attendance_sheet_tree_view"/>
+                <field name="act_window_id" ref="action_batch_attendance_sheet_process"/>
+        </record>
+        <record model="ir.actions.act_window.view" id="action_batch_sheet_form">
+                <field name="sequence" eval="2"/>
+                <field name="view_mode">form</field>
+                <field name="view_id" ref="view_batch_attendance_sheet_customn_form"/>
+                <field name="act_window_id" ref="action_batch_attendance_sheet_process"/>
+        </record>
+
+
+
+        <record id="hr_salary_rule_att_frgt" model="hr.salary.rule">
+            <field name="code">FRGT</field>
+            <field name="name">Forget</field>
+            <field name="sequence" eval="114"/>
+            <field name="category_id" ref="hr_payroll_community.DED"/>
+
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result =(worked_days.FRGT and worked_days.FRGT.number_of_hours > 0) or False
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = -worked_days.FRGT.number_of_hours * contract.wage / (9*26)
+            </field>
+            <field name="sequence" eval="75"/>
+            <field name="note">deduction of Forget Attendance time</field>
+        </record>
+
+    </data>
+</odoo>

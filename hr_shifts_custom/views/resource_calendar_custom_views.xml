@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>        
+    
+        
+    <record id="view_hr_shifts_form" model="ir.ui.view">
+      <field name="name">resource_calendar_custom.view.form</field>
+      <field name="model">resource.calendar</field>
+      <field name="inherit_id" ref="hr_employee_shift.resource_calendar_form"/>
+      <field name="arch" type="xml">
+         <xpath expr="//group[@name='resource_details']" position="attributes">
+            <attribute name="invisible">1</attribute>
+         </xpath>
+         <xpath expr="//group[1]" position="replace">
+                <group colspan='4'>
+                    <group>
+                            <field name="hr_department" style="height:30px;width:200px;font-size:16px;"/>
+                            <field name="sequence" style="height:30px;width:200px;font-size:20px;"/> 
+                    </group>
+                    <group>
+                            
+                            <field name="active" invisible="1"/>
+                            <field name="manual_avg" />
+                            <field name="fix_hours_per_day" widget="float_time" attrs="{'invisible':[('manual_avg','=',False)]}"/> 
+                            <field name="hours_per_day" widget="float_time" attrs="{'invisible':[('manual_avg','=',True)]}" />
+                            <!-- <field name="hours_per_day" widget="float_time"/> -->
+                            <field name="tz"/>
+                            <field name="is_24h"/>
+                            
+                    </group>    
+                </group>
+         </xpath>
+         <field name="color" invisible="0" />
+         <xpath expr="//page[@name='working_hours']" position="attributes">
+            <attribute name="string">Shifts Configuration</attribute>
+         </xpath>
+       
+         <xpath expr="//field[@name='attendance_ids']" position="replace">
+            
+            <group>
+
+                <group>
+                    <field name="work_schedule_type" widget="radio"/>
+                    
+                    <field name="recurring_sequence" attrs="{'invisible':[('work_schedule_type','=','normal')]}" />
+                    <field name="recurring_number" attrs="{'invisible':[('work_schedule_type','=','normal')]}" />
+                    
+                </group>
+                <group>
+                    
+                    <field name="default_shift" />
+                    <!-- <field name="default_rest" attrs="{'invisible':[('work_schedule_type','=','rotation')],'required':[('work_schedule_type','=','normal')]}"/> -->
+                    <field name="default_policy" />
+                    <field name="append_to" attrs="{'invisible':[('work_schedule_type','=','normal')]}"/>
+                    <button name="generate_shifts" type="object" string="Generate Shifts"/>
+                    <button name="update_shifts" type="object" string="Update Shifts Data"/>
+
+                </group>
+            </group>
+            <field name="shifts_config_ids">
+                <form>
+                    <group>
+                    <field name="hr_shift" />
+                    <field name="dayofweek" attrs="{'column_invisible':[('parent.recurring_sequence','=','daily')]}" />
+                    <field name="day_period" />
+                    <field name="hour_from" widget="float_time" />
+                    <field name="hour_to" widget="float_time"/>
+                    
+                    <field name="att_policy_id" />
+                    <field name="week_type" attrs="{'column_invisible':[('parent.recurring_sequence','=','daily')]}" />
+                    </group>
+                </form>
+                <tree editable="bottom">
+                    <field name="sequence" widget="handle"/>
+                    <field name="hr_shift" />
+                    <field name="hour_from" widget="float_time" />
+                    <field name="hour_to" widget="float_time"/>
+                    <field name="dayofweek" attrs="{'column_invisible':[('parent.recurring_sequence','=','daily')]}" />
+                    <field name="day_period" />
+                    <field name="week_type" attrs="{'column_invisible':[('parent.recurring_sequence','=','daily')]}" />
+                    <field name="att_policy_id" />
+                </tree>
+            </field>
+        </xpath>
+        
+      </field>
+    </record>
+
+<!-- <record id="view_resource1_custom_form" model="ir.ui.view">
+        <field name="name">resource_base_custom.view.form</field>
+        <field name="model">resource.calendar</field>
+        <field name="inherit_id" ref="resource.resource_calendar_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook/page/button[@name='switch_calendar_type']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        
+        </field>
+    </record> -->
+    <record id="view_hr_attendan1_custom_form" model="ir.ui.view">
+        <field name="name">hrattendance_custom.view.form</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//field[@name='check_in']" position="before">
+                <field name="expected_check_in" widget="float_time" />
+                <field name="expected_check_out" widget="float_time" />
+            </xpath>
+<!--             <xpath expr="//field[@name='worked_hours']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath> -->
+           
+            <xpath expr="//field[@name='check_out']" position="after">
+                <field name="match_shift" />                
+                <field name="act_over_time" widget="float_time" />
+                <field name="act_diff_time" widget="float_time" />
+                <field name="act_delay_time" widget="float_time" />
+                <field name="linked_request" />
+
+            </xpath>
+
+        </field>
+    </record>
+
+<!-- custom -->
+    <record id="view_shift_data_form" model="ir.ui.view">
+          <field name="name">shift_data.view.form</field>
+          <field name="model">shift_data</field>
+          <field name="arch" type="xml">
+             <form>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="day_period" />
+                        <field name="hour_from" widget="float_time" />
+                        <field name="hour_to" widget="float_time"/> 
+                    </group>
+                </sheet>
+              </form>
+          </field>
+    </record>
+    <record id="view_shift_data_tree" model="ir.ui.view">
+          <field name="name">shift_data.view.tree</field>
+          <field name="model">shift_data</field>
+          <field name="arch" type="xml">
+                <tree>
+                    <field name="name" />
+                    <field name="day_period" />
+                    <field name="hour_from" widget="float_time" />
+                    <field name="hour_to" widget="float_time"/>
+                </tree>
+          </field>
+    </record>
+
+    <record id="action_shift_conf_form" model="ir.actions.act_window">
+            <field name="name">Shifts Configuration</field>
+            <field name="res_model">schedule_attendances</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_id" eval="False"/>
+        </record>
+    <record id="resource.action_resource_calendar_form" model="ir.actions.act_window">
+            <field name="name">Works Schedules</field>
+            <field name="res_model">resource.calendar</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_id" eval="False"/>
+            <field name="search_view_id" ref="resource.view_resource_calendar_search"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Define working hours and time table that could be scheduled to your project members
+                </p>
+            </field>
+        </record>
+    
+</data>
+</odoo>

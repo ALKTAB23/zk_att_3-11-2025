@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+   
+
+        <record id="print_accumlate_payroll"  model="ir.actions.report">
+            <field name="name">Accumlate Payroll Report</field>
+            <field name="model">hr.payslip</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">hr_shifts_custom.report_accumlate_payroll</field>
+            <field name="report_file">hr_shifts_custom.report_accumlate_payroll</field>
+        </record>
+
+    </data>
+</odoo>

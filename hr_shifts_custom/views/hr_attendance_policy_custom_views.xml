@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+    
+    <record id="hr_late_rule_form_custom_view" model="ir.ui.view">
+      <field name="name">hr.late.rule.form.custom.view</field>
+      <field name="model">hr.late.rule</field>
+      <field name="inherit_id" ref="hr_attendance_sheet.hr_late_rule_form_view"/>
+      <field name="arch" type="xml">
+         <xpath expr="//field[@name='line_ids']/tree/field[@name='time']" position='before'>
+            <field name="counter"/>
+         </xpath>
+         <xpath expr="//field[@name='line_ids']/tree/field[@name='time']" position='after'>
+               <field name="time_limit" widget="float_time"/>
+         </xpath>
+         <xpath expr="//field[@name='line_ids']/tree/field[@name='rate']" position='attributes'>
+               <attribute name="attrs" >{'invisible':['|',('type','!=','rate'),('type','=','rate_fix'),('type','=','fix')]}</attribute>
+         </xpath>
+         <xpath expr="//field[@name='line_ids']/tree/field[@name='amount']" position='attributes'>
+               <attribute name="attrs" >{'invisible':['|',('type','!=','fix'),('type','=','rate_fix'),('type','=','rate')]}</attribute>
+         </xpath>
+      </field>
+    </record>
+    
+    <record id="hr_diff_rule_form_custom_view" model="ir.ui.view">
+      <field name="name">hr.diff.rule.form.custom.view</field>
+      <field name="model">hr.diff.rule</field>
+      <field name="inherit_id" ref="hr_attendance_sheet.hr_diff_rule_form_view"/>
+      <field name="arch" type="xml">
+         <xpath expr="//field[@name='line_ids']/tree/field[@name='time']" position='before'>
+            <field name="counter"/>
+         </xpath> 
+         <xpath expr="//field[@name='line_ids']/tree/field[@name='time']" position='after'>
+               <field name="time_limit" widget="float_time"/>
+         </xpath>
+         <xpath expr="//field[@name='line_ids']/tree/field[@name='rate']" position='attributes'>
+               <attribute name="attrs" >{'invisible':['|',('type','!=','rate'),('type','=','rate_fix'),('type','=','fix')]}</attribute>
+         </xpath>
+         <xpath expr="//field[@name='line_ids']/tree/field[@name='amount']" position='attributes'>
+               <attribute name="attrs" >{'invisible':['|',('type','!=','fix'),('type','=','rate_fix'),('type','=','rate')]}</attribute>
+         </xpath>
+      </field>
+    </record>
+
+
+    <record id="hr_attendance_policy_form_custom_view" model="ir.ui.view">
+      <field name="name">hr.attendance.form.custom.view</field>
+      <field name="model">hr.attendance.policy</field>
+      <field name="inherit_id" ref="hr_attendance_sheet.hr_attendance_policy_form_view"/>
+      <field name="arch" type="xml">
+         <xpath expr="//form/sheet/h1[1]" position="after">
+            <group string="Allowed Checkin Delay/Early Checkout Periods">
+               <field name="permit_check_in" widget="float_time" />
+               <field name="permit_check_out" widget="float_time" />
+            </group>
+         </xpath>
+         <xpath expr="//sheet" position="inside">
+            <group string="Forget Register Rule">
+               <field name="forget_rule_id" nolabel="1"/>
+            </group>
+         </xpath>
+         
+      </field>
+    </record>
+
+    <record id="hr_forget_rule_form_view" model="ir.ui.view">
+            <field name="name">hr.forget.rule.form.view</field>
+            <field name="model">hr.forget.rule</field>
+            <field name="arch" type="xml">
+                <form string="">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+
+                        </group>
+                        <group string="forget Times"/>
+                        <field name="line_ids" colspan="2">
+                            <tree editable="bottom">
+                                <field name="counter"/>
+                                <field name="rate"/>
+                            </tree>
+                        </field>
+                    </sheet>
+                </form>
+            </field>
+    </record>
+    <record id="hr_forget_rule_tree_view" model="ir.ui.view">
+            <field name="name">hr.forget.rule.tree.view</field>
+            <field name="model">hr.forget.rule</field>
+            <field name="arch" type="xml">
+                <tree string="">
+                    <field name="name"/>
+                </tree>
+            </field>
+    </record>
+    <record id="action_hr_forget_rule" model="ir.actions.act_window">
+            <field name="name">forget Rules</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.forget.rule</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    <!-- Add Text Here -->
+                </p>
+                <p>
+                    <!-- More details about what a user can do with this object will be OK -->
+                </p>
+            </field>
+     </record>
+     <menuitem id="menu_hr_forget_rule" name="Forget Register Rules"
+                  parent="hr_attendance_sheet.menu_hr_attendance_rules" action="action_hr_forget_rule" sequence="55"/>
+
+
+</data>
+</odoo>

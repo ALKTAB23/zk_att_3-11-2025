@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="accumlate_report_wizard_view" model="ir.ui.view">
+        <field name="name">payroll.accumlate.report.from.view</field>
+        <field name="model">payroll.accumlate.report</field>
+        <field name="arch" type="xml">
+            <form string="Accumlate Payroll Report">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="from_date"/>
+                            <field name="to_date"/>
+                            <field name="salary_rule" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                </sheet>
+                 <footer>
+                      <button name="print_report" string="Print" type="object" class="btn-primary"/>
+                      <button string="Cancel" class="btn-default" special="cancel" />
+                  </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_accumlate_filter" model="ir.actions.act_window">
+        <field name="name">Accumlate Report Data</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">payroll.accumlate.report</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="accumlate_report_wizard_view"/>
+        <field name="target">new</field>
+
+
+    </record>
+
+
+</odoo>

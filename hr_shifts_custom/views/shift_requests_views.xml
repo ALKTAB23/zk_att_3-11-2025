@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+<!-- **************************************************************************** -->
+      <record id="action_shift_data_request" model="ir.actions.act_window">
+            <field name="name">Shifts Data</field>
+            <field name="res_model">shift_data</field>
+            <field name="view_mode">tree,form</field>
+      </record>
+    
+    <record id="view_change_shift_form" model="ir.ui.view">
+      <field name="name">resource.calendar.shift.changeshift.view.form</field>
+      <field name="model">resource.calendar.shift.changeshift</field>
+      <field name="arch" type="xml">
+         <form>
+            <header>
+                    <button name="request_direct_manager_approve"      string="Send Request"    states="draft"      type="object" class="oe_highlight" />
+                    <button name="request_hr_manager_approve"      string="Approve"    states="manager_approve"      type="object" class="oe_highlight" />
+                    <button name="request_reject"      string="Reject"    states="manager_approve"      type="object" class="oe_highlight" />
+                    <button name="request_cancel"      string="Cancel"    states="approved"      type="object" class="oe_highlight" />
+                <field name="state" widget="statusbar" statusbar_visible="draft,manager_approve,approved,reject"/>
+            </header>
+            <sheet>
+              <group>
+                    <group>
+                        <field name="employee_id"/>
+                        <field name="request_type" />
+                        
+                        
+                    </group>
+                    <group>
+                        <field name="request_date" />
+                        <button name="getcurrentshift" type="object" string="get Current Shift"/>
+                    </group>
+                    <group>
+                        <field name="shift_date" />
+                    </group>
+                    <group colspan="4">
+                        <field name="current_shift" />
+                        <field name="c_hour_from" />
+                        <field name="c_hour_to" />
+                            
+                    </group>
+            
+            </group>
+            <notebook>
+                <page string="New Shift Data">
+                    <group> 
+                        <group>                       
+                            <field name="newshift_name"/>
+                        </group>
+                        <group>
+                            <field name="new_day_period"/>
+                        </group>
+                        <group>
+                            <field name="new_hour_from" widget="float_time"/>
+                            <field name="new_hour_to" widget="float_time"/>
+                        </group>
+          
+                        <group colspan="4">
+                            <field name="reasons" />
+                        </group>
+                    </group>
+                </page>
+                <page string="Approve Info">
+                    <group>
+                        <field name="approve_date"/>
+                        <field name="approve_notes" />                          
+                    </group>
+                </page>
+            </notebook>
+              
+            </sheet>
+          </form>
+      </field>
+      
+    </record>
+    <record id="view_change_shift_tree" model="ir.ui.view">
+          <field name="name">resource.calendar.shift.changeshift.view.tree</field>
+          <field name="model">resource.calendar.shift.changeshift</field>
+          <field name="arch" type="xml">
+             <tree>
+                <field name="employee_id"/>                
+                <field name="request_type" />
+                <field name="shift_date" />
+                <field name="new_day_period"/>
+                <field name="request_date" />
+                <field name="state" />
+              </tree>
+          </field>
+          
+        </record>
+    <!-- **************************************************************************** -->
+      <record id="action_change_shift_request" model="ir.actions.act_window">
+            <field name="name">Shifts Requests</field>
+            <field name="res_model">resource.calendar.shift.changeshift</field>
+            <field name="view_mode">tree,form</field>
+      </record>
+
+    </data>
+</odoo>

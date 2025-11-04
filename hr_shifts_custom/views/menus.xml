@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <!-- Under Manger Menu in Attendance Module -->
+        <menuitem
+                id="menu_shifts_requests"
+                name="Shifts Requests"
+                parent="hr_employee_shift.menu_shift_schedule_generate_id_menu"
+                action="action_change_shift_request"
+                sequence="3"/>
+        
+        <menuitem
+                id="menu_shifts_data"
+                name="Shifts Data"
+                parent="hr_employee_shift.menu_shift_schedule_generate_id_menu"
+                action="action_shift_data_request"
+                sequence="4"/>
+        <menuitem name="Works Schedules" id="hr_employee_shift.menu_shift"
+                  groups="hr.group_hr_manager"
+                  web_icon="hr_employee_shift,static/description/shift_icon.png"/>
+        <menuitem name="Works Schedules" id="hr_employee_shift.shift_configuration" parent="hr_employee_shift.menu_shift"/>
+        <menuitem name="Works Schedule" id="hr_employee_shift.menu_conf_shift" parent="hr_employee_shift.shift_configuration"
+                  action="resource.action_resource_calendar_form"/>
+        
+        <menuitem id="menu_hr_batch_attendance_sheet_process" name="Batch Attendance sheets"
+                  parent="hr_attendance_sheet.attendance_sheet_menu"
+                  sequence="10" action="action_batch_attendance_sheet_process"/>
+            
+                <!-- <menuitem
+                    id="menu_overtime_compensation_request"
+                    name="Overtime Compensation Request"
+                    parent="menu_bio_config"
+                    action="action_biometric_log"
+                    sequence="15"/> -->
+
+        <!-- <menuitem id="hr_attendance.menu_hr_attendance_my_attendances" active="False" /> -->
+
+        <!-- <menuitem id="hr_attendance.menu_hr_attendance_kiosk_no_user_mode" active="False" /> -->
+        <menuitem id="menu_accumulate"
+                  action="action_accumlate_filter"
+                  parent="hr_payroll_community.menu_hr_payroll_community_root"
+                  name="Accumulate Payroll Report"
+                  
+                  />
+    
+
+</odoo>
