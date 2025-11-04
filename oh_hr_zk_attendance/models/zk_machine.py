@@ -352,15 +352,8 @@ class ZkMachine(models.Model):
                     diff=diff_totalminutes-permit_check_out
 
                 
-                # Calculate overtime: only count time AFTER (shift_end + permit_check_out)
-                if checkout_time_float > ht:
-                    raw_overtime_minutes = self.subtract_two_times_24h(checkout_time_float, ht)
-                    if raw_overtime_minutes > permit_check_out:
-                        overtime = raw_overtime_minutes - permit_check_out
-                    else:
-                        overtime = 0.0
-                else:
-                    overtime = 0.0
+                # Overtime disabled - Policy rules will handle overtime calculation
+                overtime = 0.0
             return delay, diff, overtime
     def _get_float_from_time(self, time):
         time_type = datetime.strftime(time, "%H:%M:%S")
