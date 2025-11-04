@@ -131,9 +131,19 @@
                         <field name="description" nolabel="1" placeholder="Additional information about this area..."/>
                     </group>
                     <notebook>
-                        <page string="Devices in Area" name="devices">
+                        <page string="Assign Devices" name="assign_devices">
+                            <field name="assigned_device_ids" widget="many2many" options="{'no_create': True}">
+                                <tree string="Add Devices to Area">
+                                    <field name="name"/>
+                                    <field name="port_no"/>
+                                    <field name="address_id"/>
+                                    <field name="read_tz"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Current Devices" name="current_devices">
                             <field name="device_ids" readonly="1">
-                                <tree string="Devices">
+                                <tree string="Devices in This Area">
                                     <field name="name"/>
                                     <field name="port_no"/>
                                     <field name="address_id"/>

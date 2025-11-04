@@ -75,6 +75,9 @@ class ZkDeviceArea(models.Model):
         help="Timezone for this area. Devices in this area will use this timezone for time synchronization.")
     description = fields.Text(string='Description', help='Additional information about this area')
     device_ids = fields.One2many('zk.machine', 'area_id', string='Devices in Area')
+    assigned_device_ids = fields.Many2many('zk.machine', 'zk_area_device_rel', 'area_id', 'device_id', 
+                                          string='Assign Devices',
+                                          help='Add devices to this area. Devices will automatically sync their timezone.')
     device_count = fields.Integer(string='Device Count', compute='_compute_device_count', store=True)
     active = fields.Boolean(string='Active', default=True)
 
@@ -82,6 +85,17 @@ class ZkDeviceArea(models.Model):
     def _compute_device_count(self):
         for area in self:
             area.device_count = len(area.device_ids)
+
+    def write(self, vals):
+        """Update device area_id when devices are added via Many2many"""
+        result = super(ZkDeviceArea, self).write(vals)
+        if 'assigned_device_ids' in vals:
+            for area in self:
+                # Sync assigned_device_ids with device_ids by updating area_id
+                for device in area.assigned_device_ids:
+                    if device.area_id != area:
+                        device.write({'area_id': area.id})
+        return result
 
     _sql_constraints = [
         ('name_unique', 'unique(name)', 'Area name must be unique!'),
