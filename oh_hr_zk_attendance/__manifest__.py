@@ -32,6 +32,7 @@
     'website': "http://www.openhrms.com",
     'depends': ['base_setup', 'hr_attendance'],
     'data': [
+        'security/security.xml',
         'security/ir.model.access.csv',
         'data/zk_device_areas.xml',
         'views/zk_machine_view.xml',
