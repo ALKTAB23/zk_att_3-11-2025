@@ -42,6 +42,13 @@
                 <separator/>
 
                 <field name="name" string="Name"/>
+                <field name="zone_id" string="Zone"/>
+                
+                <group expand="0" string="Group By">
+                    <filter name="group_zone" string="Zone" context="{'group_by':'zone_id'}"/>
+                    <filter name="group_employee" string="Employee" context="{'group_by':'name'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by':'punching_day'}"/>
+                </group>
             </search>
         </field>
     </record>
@@ -54,6 +61,7 @@
             <!-- <tree> -->
                 <field name="punching_day"/>
                 <field name="name"/>
+                <field name="zone_id"/>
                 <field name="punch_type"/>
                 <field name="attendance_typee"/>
                 <field name="punching_time"/>

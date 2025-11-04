@@ -193,6 +193,9 @@
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='hr_settings']//field[@name='user_id']" position="after">
+                <field name="authorized_zone_ids" widget="many2many_tags" 
+                       options="{'color_field': 'id', 'no_create': False}"
+                       help="Select zones where this employee is authorized to work. Leave empty to allow all zones."/>
                 <field name="device_ids" colspan="3" width="100%">
                     <tree editable="bottom">
                         <field name="machine_ip" width="30%" />
