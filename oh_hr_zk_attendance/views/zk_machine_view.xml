@@ -132,8 +132,8 @@
                     </group>
                     <notebook>
                         <page string="Assign Devices" name="assign_devices">
-                            <field name="assigned_device_ids" widget="many2many" options="{'no_create': True}">
-                                <tree string="Add Devices to Area">
+                            <field name="assigned_device_ids" context="{'tree_view_ref': 'oh_hr_zk_attendance.view_zk_device_area_devices_tree'}">
+                                <tree string="Add Devices to Area" editable="bottom">
                                     <field name="name"/>
                                     <field name="port_no"/>
                                     <field name="address_id"/>
