@@ -23,6 +23,7 @@
                     <group>
                         <group>
                             <field name="port_no"/>
+                            <field name="zone_id" options="{'no_create': False, 'no_open': False}"/>
                             <field name="address_id"/>
                         </group>
                         <group>
@@ -68,6 +69,7 @@
             <tree string="Biometric Machine">
                 <field name="name"/>
                 <field name="port_no"/>
+                <field name="zone_id"/>
                 <field name="address_id"/>
                 <field name="company_id" groups="base.group_multi_company"/>
             </tree>
@@ -84,6 +86,82 @@
         </field>
     </record>
 
+    <!-- Device Zone Views -->
+    <record id="view_zk_device_zone_tree" model="ir.ui.view">
+        <field name="name">zk.device.zone.tree</field>
+        <field name="model">zk.device.zone</field>
+        <field name="arch" type="xml">
+            <tree string="Device Zones">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="timezone"/>
+                <field name="device_count"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_zk_device_zone_form" model="ir.ui.view">
+        <field name="name">zk.device.zone.form</field>
+        <field name="model">zk.device.zone</field>
+        <field name="arch" type="xml">
+            <form string="Device Zone">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button" options="{'terminology': 'archive'}"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Zone Name (e.g., Main Office, Branch 1)"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code" placeholder="Zone Code (e.g., MO, BR1)"/>
+                            <field name="timezone"/>
+                        </group>
+                        <group>
+                            <field name="device_count"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1" placeholder="Additional information about this zone..."/>
+                    </group>
+                    <notebook>
+                        <page string="Devices in Zone" name="devices">
+                            <field name="device_ids" readonly="1">
+                                <tree string="Devices">
+                                    <field name="name"/>
+                                    <field name="port_no"/>
+                                    <field name="address_id"/>
+                                    <field name="read_tz"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_zk_device_zone_search" model="ir.ui.view">
+        <field name="name">zk.device.zone.search</field>
+        <field name="model">zk.device.zone</field>
+        <field name="arch" type="xml">
+            <search string="Search Zones">
+                <field name="name" string="Zone" filter_domain="['|', ('name','ilike',self), ('code','ilike',self)]"/>
+                <field name="timezone"/>
+                <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Timezone" name="group_timezone" context="{'group_by':'timezone'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
     <record id="zk_machine_action" model="ir.actions.act_window">
         <field name="name">Attendances</field>
         <field name="res_model">zk.machine</field>
@@ -93,6 +171,20 @@
         <field name="name">ZK Reading Categories</field>
         <field name="res_model">attendance_types_readings</field>
         <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="zk_device_zone_action" model="ir.actions.act_window">
+        <field name="name">Device Zones</field>
+        <field name="res_model">zk.device.zone</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Device Zone
+            </p>
+            <p>
+                Zones help you organize devices by location and automatically sync timezone settings.
+            </p>
+        </field>
     </record>
 
     <record id="hr_employee_inherit_form_view" model="ir.ui.view">
@@ -113,6 +205,7 @@
 
     <menuitem id="zk_machine_menu" parent="hr_attendance.menu_hr_attendance_root" sequence="50" name="Biometric Manager" />
     <menuitem id="zk_machine_sub_menu" parent="zk_machine_menu"  name="Device Configuration" action="zk_machine_action" sequence="1"/>
-    <menuitem id="zk_machine_conf_sub" parent="zk_machine_menu"  name="ZK Reading Category" action="zk_machine_reading_action" sequence="1"/>
+    <menuitem id="zk_device_zone_menu" parent="zk_machine_menu"  name="Device Zones" action="zk_device_zone_action" sequence="2"/>
+    <menuitem id="zk_machine_conf_sub" parent="zk_machine_menu"  name="ZK Reading Category" action="zk_machine_reading_action" sequence="3"/>
 </odoo>
 

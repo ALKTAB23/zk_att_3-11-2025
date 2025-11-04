@@ -5,6 +5,7 @@ access_hr_zk_machine_user2,zk.machine.hr_biometric_machine2,model_zk_report_dail
 access_hr_employee_devices_ids,hr_employee_devices_ids2,model_hr_employee_devices_ids,hr_attendance.group_hr_attendance_user,1,1,1,1
 
 access_hr_att_typesread_ids,hr_att_typesread_ids2,model_attendance_types_readings,hr_attendance.group_hr_attendance_user,1,1,1,1
+access_zk_device_zone_user,zk.device.zone.user,model_zk_device_zone,hr_attendance.group_hr_attendance_user,1,1,1,1
 
 
 
