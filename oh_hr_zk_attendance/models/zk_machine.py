@@ -485,7 +485,7 @@ class ZkMachine(models.Model):
                                         if employee_device:
                                             get_user_id=employee_device[0].emp_id
                                         if get_user_id:
-                                            c_time = datetime.strptime(str(each.timestamp), '%Y-%m-%d %H:%M:%S')
+                                            c_time = datetime.strptime(str(atten_time), '%Y-%m-%d %H:%M:%S')
                                             at_name=""
                                             att_t=self.env['attendance_types_readings'].search([('code','=',str(each.status))])
                                             
