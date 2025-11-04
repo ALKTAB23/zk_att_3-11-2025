@@ -451,9 +451,26 @@ class ZkMachine(models.Model):
                     for each in attendance:
                         # logging.info("att>>>>>"+str(each.punch)+"__"+str(self.checkin_read_key)+"_")
                         if str(each.punch) == str(self.checkin_read_key) or str(each.punch) == str(self.checkout_read_key):
-                            # الوقت من الجهاز هو الوقت المحلي مباشرة - لا يحتاج تحويل
+                            # جهاز البصمة يرجع الوقت المحلي
+                            # نحتاج نحوله من timezone الجهاز إلى UTC قبل الحفظ في Odoo
                             atten_time = each.timestamp
-                            _logger.debug(f"وقت البصمة الأصلي من الجهاز: {atten_time}")
+                            
+                            try:
+                                # قراءة timezone الجهاز من الإعدادات
+                                device_tz = pytz.timezone(self.read_tz)
+                                # الوقت من الجهاز هو وقت محلي بتوقيت الجهاز
+                                local_time = device_tz.localize(atten_time)
+                                # تحويله إلى UTC للحفظ في قاعدة البيانات
+                                atten_time_utc = local_time.astimezone(pytz.UTC).replace(tzinfo=None)
+                                
+                                _logger.info(f"الوقت من الجهاز (محلي): {atten_time} | "
+                                           f"Timezone: {self.read_tz} | "
+                                           f"UTC للحفظ: {atten_time_utc}")
+                                
+                                atten_time = atten_time_utc
+                            except Exception as e:
+                                _logger.error(f"خطأ في تحويل الوقت: {e}, استخدام الوقت الأصلي")
+                                atten_time = each.timestamp
                             if user:
                                 # for uid in user:
                                 if each.user_id in users_list:
