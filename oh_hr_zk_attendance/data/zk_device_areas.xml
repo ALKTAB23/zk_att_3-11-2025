@@ -4,7 +4,7 @@
         <!-- Demo Device Zones for different regions -->
         
         <!-- Libya Zone -->
-        <record id="zone_libya_tripoli" model="zk.device.zone">
+        <record id="area_libya_tripoli" model="zk.device.area">
             <field name="name">Libya - Tripoli Office</field>
             <field name="code">LY-TPL</field>
             <field name="timezone">Africa/Tripoli</field>
@@ -12,7 +12,7 @@
         </record>
 
         <!-- Egypt Zone -->
-        <record id="zone_egypt_cairo" model="zk.device.zone">
+        <record id="area_egypt_cairo" model="zk.device.area">
             <field name="name">Egypt - Cairo Office</field>
             <field name="code">EG-CAI</field>
             <field name="timezone">Africa/Cairo</field>
@@ -20,14 +20,14 @@
         </record>
 
         <!-- Saudi Arabia Zones -->
-        <record id="zone_saudi_riyadh" model="zk.device.zone">
+        <record id="area_saudi_riyadh" model="zk.device.area">
             <field name="name">Saudi Arabia - Riyadh Office</field>
             <field name="code">SA-RYD</field>
             <field name="timezone">Asia/Riyadh</field>
             <field name="description">Main office in Riyadh, Saudi Arabia (UTC+3)</field>
         </record>
 
-        <record id="zone_saudi_jeddah" model="zk.device.zone">
+        <record id="area_saudi_jeddah" model="zk.device.area">
             <field name="name">Saudi Arabia - Jeddah Branch</field>
             <field name="code">SA-JED</field>
             <field name="timezone">Asia/Riyadh</field>
@@ -35,14 +35,14 @@
         </record>
 
         <!-- UAE Zones -->
-        <record id="zone_uae_dubai" model="zk.device.zone">
+        <record id="area_uae_dubai" model="zk.device.area">
             <field name="name">UAE - Dubai Office</field>
             <field name="code">AE-DXB</field>
             <field name="timezone">Asia/Dubai</field>
             <field name="description">Main office in Dubai, UAE (UTC+4)</field>
         </record>
 
-        <record id="zone_uae_abudhabi" model="zk.device.zone">
+        <record id="area_uae_abudhabi" model="zk.device.area">
             <field name="name">UAE - Abu Dhabi Branch</field>
             <field name="code">AE-AUH</field>
             <field name="timezone">Asia/Dubai</field>
@@ -50,7 +50,7 @@
         </record>
 
         <!-- Kuwait Zone -->
-        <record id="zone_kuwait" model="zk.device.zone">
+        <record id="area_kuwait" model="zk.device.area">
             <field name="name">Kuwait - Kuwait City Office</field>
             <field name="code">KW-KWI</field>
             <field name="timezone">Asia/Kuwait</field>
@@ -58,7 +58,7 @@
         </record>
 
         <!-- Qatar Zone -->
-        <record id="zone_qatar" model="zk.device.zone">
+        <record id="area_qatar" model="zk.device.area">
             <field name="name">Qatar - Doha Office</field>
             <field name="code">QA-DOH</field>
             <field name="timezone">Asia/Qatar</field>
@@ -66,7 +66,7 @@
         </record>
 
         <!-- Jordan Zone -->
-        <record id="zone_jordan" model="zk.device.zone">
+        <record id="area_jordan" model="zk.device.area">
             <field name="name">Jordan - Amman Office</field>
             <field name="code">JO-AMM</field>
             <field name="timezone">Asia/Amman</field>
@@ -74,7 +74,7 @@
         </record>
 
         <!-- Lebanon Zone -->
-        <record id="zone_lebanon" model="zk.device.zone">
+        <record id="area_lebanon" model="zk.device.area">
             <field name="name">Lebanon - Beirut Office</field>
             <field name="code">LB-BEY</field>
             <field name="timezone">Asia/Beirut</field>

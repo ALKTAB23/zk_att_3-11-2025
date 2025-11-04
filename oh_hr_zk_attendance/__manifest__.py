@@ -33,7 +33,7 @@
     'depends': ['base_setup', 'hr_attendance'],
     'data': [
         'security/ir.model.access.csv',
-        'data/zk_device_zones.xml',
+        'data/zk_device_areas.xml',
         'views/zk_machine_view.xml',
         'views/zk_machine_attendance_view.xml',
         'data/download_data.xml',

@@ -61,31 +61,31 @@ class HrAtt_types_read(models.Model):
     code=fields.Char('Code',required=True)
     name=fields.Char('Type Name',required=True)
 
-class ZkDeviceZone(models.Model):
-    """Zone/Location for ZK Attendance Devices"""
-    _name = 'zk.device.zone'
-    _description = 'ZK Device Zone/Location'
+class ZkDeviceArea(models.Model):
+    """Area for ZK Attendance Devices - Group of devices in same location"""
+    _name = 'zk.device.area'
+    _description = 'ZK Device Area'
     _order = 'name'
 
-    name = fields.Char(string='Zone Name', required=True, help='Name of the zone/location (e.g., Main Office, Branch 1)')
-    code = fields.Char(string='Zone Code', help='Short code for the zone (e.g., MO, BR1)')
+    name = fields.Char(string='Area Name', required=True, help='Name of the area (e.g., Main Office, Branch 1)')
+    code = fields.Char(string='Area Code', help='Short code for the area (e.g., MO, BR1)')
     timezone = fields.Selection(
-        _tz_get, string='Zone Timezone', required=True,
+        _tz_get, string='Area Timezone', required=True,
         default=lambda self: self._context.get('tz') or self.env.user.tz or 'UTC',
-        help="Timezone for this zone. Devices in this zone will use this timezone for time synchronization.")
-    description = fields.Text(string='Description', help='Additional information about this zone')
-    device_ids = fields.One2many('zk.machine', 'zone_id', string='Devices in Zone')
+        help="Timezone for this area. Devices in this area will use this timezone for time synchronization.")
+    description = fields.Text(string='Description', help='Additional information about this area')
+    device_ids = fields.One2many('zk.machine', 'area_id', string='Devices in Area')
     device_count = fields.Integer(string='Device Count', compute='_compute_device_count', store=True)
     active = fields.Boolean(string='Active', default=True)
 
     @api.depends('device_ids')
     def _compute_device_count(self):
-        for zone in self:
-            zone.device_count = len(zone.device_ids)
+        for area in self:
+            area.device_count = len(area.device_ids)
 
     _sql_constraints = [
-        ('name_unique', 'unique(name)', 'Zone name must be unique!'),
-        ('code_unique', 'unique(code)', 'Zone code must be unique!'),
+        ('name_unique', 'unique(name)', 'Area name must be unique!'),
+        ('code_unique', 'unique(code)', 'Area code must be unique!'),
     ]
 
 class ZkMachine(models.Model):
@@ -93,8 +93,8 @@ class ZkMachine(models.Model):
 
     name = fields.Char(string='Machine IP', required=True)
     port_no = fields.Integer(string='Port No', required=True)
-    zone_id = fields.Many2one('zk.device.zone', string='Device Zone', 
-                               help='Zone/Location where this device is installed. Used for timezone synchronization and device organization.')
+    area_id = fields.Many2one('zk.device.area', string='Device Area', 
+                               help='Area where this device is installed. Used for timezone synchronization and device organization.')
     address_id = fields.Many2one('res.partner', string='Working Address')
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id.id)
     log_by_check_in_check_out=fields.Selection([ ('check_in_out','Log by Check in and Check out'),
@@ -130,11 +130,11 @@ class ZkMachine(models.Model):
                                       ('days', 'Days'),
                                       ('weeks', 'Weeks'),
                                       ('months', 'Months')], string='Interval Unit', related="schedule_action.interval_type")
-    @api.onchange('zone_id')
-    def _onchange_zone_id(self):
-        """Auto-sync timezone when zone is selected"""
-        if self.zone_id and self.zone_id.timezone:
-            self.read_tz = self.zone_id.timezone
+    @api.onchange('area_id')
+    def _onchange_area_id(self):
+        """Auto-sync timezone when area is selected"""
+        if self.area_id and self.area_id.timezone:
+            self.read_tz = self.area_id.timezone
             
     def enable_dis_sched(self):
         if self.schedule_action:
