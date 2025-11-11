@@ -6,6 +6,8 @@
         <field name="arch" type="xml">
             <form string="Biometric Device">
                 <header>
+                    <button name="test_device_connection" type="object" string="🔍 Test Connection" 
+                            class="btn-info" icon="fa-plug"/>
                     <button name="clear_attendance" type="object" string="Clear Data" class="oe_highlight"
                                 icon="fa-remove " confirm="Are you sure you want to do this?"/>
                     <button name="download_attendance" type="object" string="Download Data" class="oe_highlight"
@@ -21,26 +23,30 @@
                         </h1>
                     </div>
                     <group>
-                        <group>
+                        <group string="Device Connection">
                             <field name="port_no"/>
                             <field name="area_id" options="{'no_create': False, 'no_open': False}"/>
                             <field name="address_id"/>
+                            <field name="read_tz"/>
                         </group>
-                        <group>
+                        <group string="Reading Configuration">
                             <field name="company_id" groups="base.group_multi_company"/>
                             <field name="log_by_check_in_check_out" widget="radio" />
-                        </group>
-                        <group>
-                            <field name="fetch_data_setting" widget="radio" />
-                            <field name="from_date" attrs="{'invisible':[('fetch_data_setting','=','all')]}" />
-                            <field name="to_date" attrs="{'invisible':[('fetch_data_setting','=','all')]}" />
-                        </group>
-                        <group>
-                            <field name="read_tz"/>
                             <field name="checkin_read_key" />
                             <field name="checkout_read_key" />
+                        </group>
+                    </group>
+                    <group>
+                        <group string="📅 Date Range Settings" colspan="2">
+                            <div class="alert alert-info" role="alert" style="margin-bottom: 10px;">
+                                <strong>ملاحظة هامة:</strong> إذا لم تجد سجلات، جرب تغيير الإعداد إلى "All Records" للتحقق من وجود سجلات في الجهاز.
+                            </div>
+                            <field name="fetch_data_setting" widget="radio" />
+                            <field name="from_date" attrs="{'invisible':[('fetch_data_setting','=','all')], 'required':[('fetch_data_setting','=','range')]}" />
+                            <field name="to_date" attrs="{'invisible':[('fetch_data_setting','=','all')]}" />
+                        </group>
+                        <group string="Scheduler Settings">
                             <field name="schedule_action" /> 
-                            
                         </group>
                         <group colsapn="4">
                              

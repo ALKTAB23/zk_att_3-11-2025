@@ -382,6 +382,94 @@ class ZkMachine(models.Model):
             s_h=0
         convert_to_time=datetime(1,1,1,s_h,s_m, 0)
         return self._get_float_from_time(convert_to_time)
+    def test_device_connection(self):
+        """Test device connection and show diagnostic information"""
+        _logger = logging.getLogger(__name__)
+        
+        for info in self:
+            machine_ip = info.name
+            zk_port = info.port_no
+            timeout = 50
+            
+            try:
+                zk = ZK(machine_ip, port=zk_port, timeout=timeout, password=0, force_udp=False, ommit_ping=False)
+                conn = zk.connect()
+                
+                # Get device information
+                device_name = conn.get_device_name() if hasattr(conn, 'get_device_name') else "Unknown"
+                device_time = conn.get_time()
+                firmware_version = conn.get_firmware_version() if hasattr(conn, 'get_firmware_version') else "Unknown"
+                
+                # Get users count
+                users = conn.get_users()
+                users_count = len(users) if users else 0
+                
+                # Get attendance count (all records)
+                all_attendance = conn.get_attendance(policy='all')
+                total_records = len(all_attendance) if all_attendance else 0
+                
+                # Get date range if there are records
+                date_range_info = ""
+                if all_attendance and total_records > 0:
+                    first_date = all_attendance[0].timestamp
+                    last_date = all_attendance[-1].timestamp
+                    date_range_info = f"\n📅 تاريخ أول سجل: {first_date}\n📅 تاريخ آخر سجل: {last_date}"
+                
+                conn.disconnect()
+                
+                message = f"""
+✅ نجح الاتصال بالجهاز!
+
+📌 معلومات الجهاز:
+- IP: {machine_ip}:{zk_port}
+- الاسم: {device_name}
+- Firmware: {firmware_version}
+- 🕐 وقت الجهاز: {device_time}
+- Timezone: {info.read_tz}
+
+👥 المستخدمين: {users_count}
+📊 إجمالي سجلات الحضور: {total_records}{date_range_info}
+
+💡 ملاحظات:
+- إذا كان عدد السجلات 0، تأكد من تسجيل حضور فعلي على الجهاز
+- تحقق من أن وقت الجهاز ({device_time}) متطابق مع النطاق الزمني المطلوب
+- إذا كنت تستخدم 'range'، تأكد من أن التواريخ صحيحة
+"""
+                
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': 'Device Connection Test',
+                        'message': message,
+                        'type': 'success',
+                        'sticky': True,
+                    }
+                }
+                
+            except Exception as e:
+                error_msg = f"""
+❌ فشل الاتصال بالجهاز!
+
+خطأ: {str(e)}
+
+الإجراءات المقترحة:
+✓ تحقق من أن الجهاز متصل بالشبكة
+✓ تأكد من صحة عنوان IP: {machine_ip}
+✓ تأكد من رقم المنفذ: {zk_port}
+✓ تحقق من جدار الحماية (Firewall)
+"""
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': 'Connection Failed',
+                        'message': error_msg,
+                        'type': 'danger',
+                        'sticky': True,
+                    }
+                }
+    
     def download_attendance(self):
         """تحميل سجلات الحضور من جهاز البصمة مع معالجة شاملة للأخطاء"""
         _logger = logging.getLogger(__name__)
@@ -445,15 +533,35 @@ class ZkMachine(models.Model):
                 # 5. قراءة سجلات الحضور من الجهاز
                 attendance = False
                 try:
+                    # First, try to get device time to verify clock settings
+                    try:
+                        device_time = conn.get_time()
+                        _logger.info(f"📅 وقت الجهاز الحالي: {device_time}")
+                    except Exception as time_err:
+                        _logger.warning(f"⚠ لم نتمكن من قراءة وقت الجهاز: {time_err}")
+                    
                     if self.fetch_data_setting == 'range':
                         if self.to_date:
                             _logger.info(f"قراءة السجلات من {self.from_date} إلى {self.to_date}")
                             _logger.info(f"إعداد الجلب: fetch_data_setting={self.fetch_data_setting}")
+                            
+                            # Try with range policy first
                             attendance = conn.get_attendance(
                                 start_date=str(self.from_date),
                                 end_date=str(self.to_date),
                                 policy='range'
                             )
+                            
+                            # If no records with range, try getting all records to see if device has any data
+                            if not attendance or len(attendance) == 0:
+                                _logger.info("🔍 لم نجد سجلات في النطاق المحدد، محاولة قراءة جميع السجلات...")
+                                all_attendance = conn.get_attendance(policy='all')
+                                if all_attendance and len(all_attendance) > 0:
+                                    _logger.warning(f"⚠ يوجد {len(all_attendance)} سجل في الجهاز، لكن لا شيء في النطاق {self.from_date} إلى {self.to_date}")
+                                    _logger.info(f"  أول سجل متوفر: {all_attendance[0].timestamp}")
+                                    _logger.info(f"  آخر سجل متوفر: {all_attendance[-1].timestamp}")
+                                else:
+                                    _logger.warning("⚠ الجهاز لا يحتوي على أي سجلات حضور على الإطلاق")
                         else:
                             _logger.info(f"قراءة السجلات من {self.from_date} فقط (بدون تاريخ نهاية)")
                             attendance = conn.get_attendance()
@@ -483,15 +591,28 @@ class ZkMachine(models.Model):
                 # 6. معالجة السجلات المقروءة
                 if not attendance:
                     conn.enable_device()
-                    raise UserError(_(
-                        "لم يتم العثور على سجلات حضور جديدة.\n\n"
+                    error_msg = _(
+                        "لم يتم العثور على سجلات حضور.\n\n"
                         "الأسباب المحتملة:\n"
-                        "1. لا توجد سجلات جديدة في الجهاز منذ آخر مزامنة\n"
-                        "2. الموظفين غير مسجلين في النظام\n"
-                        "3. خطأ في إعدادات التاريخ (إذا كنت تستخدم نطاق تاريخ محدد)\n\n"
-                        f"عدد السجلات المقروءة: {len(attendance) if attendance else 0}\n"
-                        f"عدد المستخدمين في الجهاز: {len(user) if user else 0}"
-                    ))
+                        "1. لا توجد سجلات في النطاق الزمني المحدد ({} إلى {})\n"
+                        "2. الجهاز لا يحتوي على سجلات حضور على الإطلاق\n"
+                        "3. وقت الجهاز غير متطابق مع التاريخ المطلوب\n"
+                        "4. السجلات تم مسحها من ذاكرة الجهاز\n\n"
+                        "الإجراءات المقترحة:\n"
+                        "✓ تحقق من وقت الجهاز (انظر السجلات أعلاه)\n"
+                        "✓ جرب تغيير fetch_data_setting إلى 'all' لرؤية جميع السجلات\n"
+                        "✓ تأكد من تسجيل حضور فعلي على الجهاز\n"
+                        "✓ راجع الفترة الزمنية المطلوبة\n\n"
+                        "المعلومات:\n"
+                        "عدد السجلات: {}\n"
+                        "عدد المستخدمين في الجهاز: {}"
+                    ).format(
+                        self.from_date if self.fetch_data_setting == 'range' else 'غير محدد',
+                        self.to_date if self.fetch_data_setting == 'range' and self.to_date else 'غير محدد',
+                        len(attendance) if attendance else 0,
+                        len(user) if user else 0
+                    )
+                    raise UserError(error_msg)
                 
                 if attendance:
                     _logger.info(f"بدء معالجة {len(attendance)} سجل حضور")
