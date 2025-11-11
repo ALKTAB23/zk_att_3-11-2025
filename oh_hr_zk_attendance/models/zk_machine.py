@@ -542,15 +542,22 @@ class ZkMachine(models.Model):
                     
                     if self.fetch_data_setting == 'range':
                         if self.to_date:
-                            _logger.info(f"قراءة السجلات من {self.from_date} إلى {self.to_date}")
-                            _logger.info(f"إعداد الجلب: fetch_data_setting={self.fetch_data_setting}")
-                            
-                            # Try with range policy first
-                            attendance = conn.get_attendance(
-                                start_date=str(self.from_date),
-                                end_date=str(self.to_date),
-                                policy='range'
-                            )
+                            # Check if to_date is in the future
+                            from datetime import date
+                            today = date.today()
+                            if self.to_date > today:
+                                _logger.warning(f"⚠ to_date ({self.to_date}) في المستقبل! سيتم استخدام جميع السجلات بدلاً من ذلك")
+                                attendance = conn.get_attendance(policy='all')
+                            else:
+                                _logger.info(f"قراءة السجلات من {self.from_date} إلى {self.to_date}")
+                                _logger.info(f"إعداد الجلب: fetch_data_setting={self.fetch_data_setting}")
+                                
+                                # Try with range policy first
+                                attendance = conn.get_attendance(
+                                    start_date=str(self.from_date),
+                                    end_date=str(self.to_date),
+                                    policy='range'
+                                )
                             
                             # If no records with range, try getting all records to see if device has any data
                             if not attendance or len(attendance) == 0:
