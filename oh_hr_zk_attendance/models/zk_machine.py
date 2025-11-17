@@ -708,6 +708,10 @@ class ZkMachine(models.Model):
                             if len(emp_rec)>0:
                                 for cont in emp_rec:
                                     self.register_attendances(emp,cont,c_date,att_obj,info)
+                            else:
+                                # Log warning if no active contract found
+                                emp_obj = self.env['hr.employee'].browse(emp[0])
+                                _logger.warning(f"⚠ الموظف {emp_obj.name} (ID: {emp[0]}) ليس لديه عقد نشط. لن يتم نقل سجلات الحضور إلى hr.attendance")
 
                     _logger.info("=== اكتملت عملية تحميل السجلات بنجاح ===")
                     return {
