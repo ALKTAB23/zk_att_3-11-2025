@@ -567,9 +567,19 @@ class attendance_sheet_custom(models.Model):
                         status_to_compare = 'workday' if line.status == 'ready' else line.status
                     for rule in policy.overtime_rule_ids.filtered(lambda l: l.type == status_to_compare):
                         current_rule = rule
-                    if current_rule and ((current_rule.active_after and current_rule.active_after <= line.ac_sign_out) or not current_rule.active_after):
+                    # ✅ تطبيق قواعد الإضافي بشكل صحيح
+                    if current_rule:
+                        # active_after هو مدة (بالساعات)، نقارنه مع مدة الإضافي
+                        if line.overtime >= current_rule.active_after:
+                            no_overtime += 1
+                            overtime += (line.overtime * current_rule.rate)
+                            _logger.info(f"✅ Overtime: {line.overtime}h × Rate {current_rule.rate} = {line.overtime * current_rule.rate}h")
+                        else:
+                            _logger.info(f"⚠️ Overtime {line.overtime}h < threshold {current_rule.active_after}h")
+                    elif line.overtime > 0:
                         no_overtime += 1
-                        overtime += (line.overtime * current_rule.rate)
+                        overtime += line.overtime
+                        _logger.info(f"📊 Overtime without rule: {line.overtime}h")
                 no_plicy_flag = True
                 if line.status == "ab":
                     no_absence += 1
