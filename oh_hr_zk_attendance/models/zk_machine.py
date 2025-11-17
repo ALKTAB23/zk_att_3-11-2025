@@ -658,6 +658,7 @@ class ZkMachine(models.Model):
                                         [('device_id', '=', each.user_id), ('punching_time', '=', atten_time),('machine_ip','=',self.id)])
                                     
                                     if duplicate_atten_ids:
+                                        skipped_duplicate += 1
                                         continue
                                     else:
                                         employee_device=self.env['hr.employee.devices_ids'].search([('machine_ip','=',self.id),('device_id','=',each.user_id)])
@@ -682,7 +683,19 @@ class ZkMachine(models.Model):
                                                                   'punching_day': atten_time,
                                                                   'is_process':False
                                                                   })
+                                            created_count += 1
+                                        else:
+                                            skipped_no_employee += 1
+                        else:
+                            skipped_filter += 1
                                     # break
+                    
+                    _logger.info(f"📊 إحصائيات الحفظ:")
+                    _logger.info(f"  ✅ تم إنشاء: {created_count} سجل")
+                    _logger.info(f"  ⏭ تم تجاهل (مكرر): {skipped_duplicate} سجل")
+                    _logger.info(f"  🚫 تم تجاهل (punch type غير مطابق): {skipped_filter} سجل")
+                    _logger.info(f"  👤 تم تجاهل (موظف غير موجود): {skipped_no_employee} سجل")
+                    
                     conn.enable_device()
                     
                     query = """
