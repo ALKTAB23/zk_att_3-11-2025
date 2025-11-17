@@ -630,6 +630,7 @@ class ZkMachine(models.Model):
                     for each in attendance:
                         # logging.info("att>>>>>"+str(each.punch)+"__"+str(self.checkin_read_key)+"_")
                         if str(each.punch) == str(self.checkin_read_key) or str(each.punch) == str(self.checkout_read_key):
+                            skipped_filter += 0  # Passed filter
                             # جهاز البصمة يرجع الوقت المحلي
                             # نحتاج نحوله من timezone الجهاز إلى UTC قبل الحفظ في Odoo
                             atten_time = each.timestamp
