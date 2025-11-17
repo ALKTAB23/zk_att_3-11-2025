@@ -158,13 +158,23 @@ class ZkMachine(models.Model):
                 self.schedule_action.active=True
 
     def write(self, vals):
-        if 'to_date' in vals:
-            from_d=vals['from_date']
-            fromdate=datetime.strptime(vals['from_date'],'%Y-%m-%d').date()
-            todate=datetime.strptime(vals['to_date'],'%Y-%m-%d').date()
-            days=(todate-fromdate).days
-            if days>40:
-                raise ValidationError('The different days must be less than 40 days!')
+        if 'to_date' in vals and vals['to_date']:
+            # Get from_date from vals or from current record
+            from_date_val = vals.get('from_date') or self.from_date
+            if from_date_val:
+                if isinstance(from_date_val, str):
+                    fromdate = datetime.strptime(from_date_val, '%Y-%m-%d').date()
+                else:
+                    fromdate = from_date_val
+                
+                if isinstance(vals['to_date'], str):
+                    todate = datetime.strptime(vals['to_date'], '%Y-%m-%d').date()
+                else:
+                    todate = vals['to_date']
+                
+                days = (todate - fromdate).days
+                if days > 40:
+                    raise ValidationError('The different days must be less than 40 days!')
 
         return super(ZkMachine, self).write(vals)
     def update_interval(self):
