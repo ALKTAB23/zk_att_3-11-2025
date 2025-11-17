@@ -373,16 +373,52 @@ class ZkMachine(models.Model):
                     
                     # طرح permit_check_out من الإضافي (فترة السماح)
                     if overtime_hours > permit_check_out_hours:
-                        overtime = overtime_hours - permit_check_out_hours
+                        overtime_raw = overtime_hours - permit_check_out_hours
                     else:
-                        overtime = 0.0
+                        overtime_raw = 0.0
+                    
+                    # 🔥 تطبيق قواعد الإضافي (Overtime Rules) من الـ Policy
+                    overtime = overtime_raw
+                    if match_shift_computed.att_policy_id and overtime_raw > 0:
+                        policy = match_shift_computed.att_policy_id
+                        overtime_rules = policy.get_overtime()
+                        
+                        # تحديد نوع اليوم (workday, weekend, ph)
+                        # TODO: يمكن تحسين هذا للتمييز بين workday/weekend/ph
+                        day_type = 'workday'
+                        
+                        # الحصول على rate و active_after من القواعد
+                        rate = overtime_rules.get('wd_rate', 1.0)
+                        active_after = overtime_rules.get('wd_after', 0.0)
+                        
+                        # ⚠️ ملاحظة مهمة: active_after هو مدة زمنية (بالساعات)، وليس وقت مطلق!
+                        # مثال: active_after = 0.0 → حساب الإضافي مباشرة
+                        #        active_after = 0.5 → حساب الإضافي بعد 30 دقيقة
+                        #        active_after = 16.5 → حساب الإضافي بعد 16.5 ساعة (عادة خطأ في الإدخال!)
+                        
+                        _logger.info(f"  📋 قواعد الإضافي من Policy '{policy.name}':")
+                        _logger.info(f"     Rate = {rate}x")
+                        _logger.info(f"     Apply After = {active_after}h ({self.get_time_from_float(active_after)})")
+                        
+                        # تطبيق active_after على مدة الإضافي
+                        if overtime_raw > active_after:
+                            overtime = (overtime_raw - active_after) * rate
+                            _logger.info(f"  🧮 الحساب: ({overtime_raw:.4f}h - {active_after}h) × {rate} = {overtime:.4f}h")
+                            _logger.info(f"  💰 الإضافي النهائي (بعد Rate): {overtime:.4f} ساعة")
+                        else:
+                            overtime = 0.0
+                            _logger.warning(f"  ⚠️ الإضافي الخام ({overtime_raw:.4f}h) أقل من 'Apply After' ({active_after}h)")
+                            _logger.warning(f"  ⚠️ تلميح: إذا كنت تريد حساب الإضافي مباشرة، اضبط 'Apply After' على 0:00")
+                    else:
+                        if not match_shift_computed.att_policy_id:
+                            _logger.warning(f"  ⚠️ لا توجد Attendance Policy مرتبطة - سيُستخدم الإضافي الخام بدون Rate")
                     
                     _logger.info(f"⏰ حساب الإضافي:")
                     _logger.info(f"  وقت الخروج الفعلي: {co:.2f} ({self.get_time_from_float(co)})")
                     _logger.info(f"  وقت الخروج المتوقع: {ht:.2f} ({self.get_time_from_float(ht)})")
                     _logger.info(f"  إضافي خام (ساعات): {overtime_hours:.4f}")
                     _logger.info(f"  فترة السماح: {permit_check_out:.0f} دقيقة = {permit_check_out_hours:.4f} ساعة")
-                    _logger.info(f"  ⭐ الإضافي النهائي (ساعات): {overtime:.4f}")
+                    _logger.info(f"  ⭐ الإضافي النهائي (بعد القواعد): {overtime:.4f}")
                 else:
                     overtime = 0.0
                     _logger.info(f"⏰ لا يوجد إضافي: checkout_actual ({co:.2f}) <= expected ({ht:.2f})")
