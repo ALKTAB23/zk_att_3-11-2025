@@ -9,6 +9,30 @@ echo "╚═══════════════════════�
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════
+# إصلاح 0: تصحيح صلاحيات الملفات
+# ═══════════════════════════════════════════════════════════════════
+echo "┌────────────────────────────────────────────────────────────────┐"
+echo "│ 0️⃣  تصحيح صلاحيات الملفات                                    │"
+echo "└────────────────────────────────────────────────────────────────┘"
+
+echo "⚙️  تعيين الصلاحيات الصحيحة للملفات..."
+
+# تصحيح صلاحيات hr_shifts_custom
+chown -R odoo:odoo /opt/odoo16/custom/hr_shifts_custom
+chmod -R 755 /opt/odoo16/custom/hr_shifts_custom
+find /opt/odoo16/custom/hr_shifts_custom -type f -name "*.py" -exec chmod 644 {} \;
+
+echo "✅ تم تصحيح صلاحيات hr_shifts_custom"
+
+# تصحيح صلاحيات oh_hr_zk_attendance
+chown -R odoo:odoo /opt/odoo16/custom/oh_hr_zk_attendance
+chmod -R 755 /opt/odoo16/custom/oh_hr_zk_attendance
+find /opt/odoo16/custom/oh_hr_zk_attendance -type f -name "*.py" -exec chmod 644 {} \;
+
+echo "✅ تم تصحيح صلاحيات oh_hr_zk_attendance"
+echo ""
+
+# ═══════════════════════════════════════════════════════════════════
 # إصلاح 1: Payslip Cancel Error
 # ═══════════════════════════════════════════════════════════════════
 echo "┌────────────────────────────────────────────────────────────────┐"
