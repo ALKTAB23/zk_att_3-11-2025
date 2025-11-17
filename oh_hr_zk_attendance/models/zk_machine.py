@@ -816,12 +816,16 @@ class ZkMachine(models.Model):
     def register_attendances(self,emp,emp_rec,c_date,att_obj,machine_ip):
         emp_r=self.env['hr.employee'].browse(emp[0])
         emp_rec=self.env['hr.contract'].get_employee_contract(emp_r)
+        _logger.info(f"📝 بدء register_attendances للموظف: {emp_r.name}, تاريخ: {c_date[0]}")
         if emp_rec:
             if self.log_by_check_in_check_out=='check_in_out':
                 check_in_recs=self.env['zk.machine.attendance'].search([('punching_day','=',str(c_date[0])),
                     ('employee_id','=',emp[0]),('is_process','=',False),
                     ('machine_ip','=',machine_ip.id)],
                     order='punching_time')
+                _logger.info(f"  🔢 عدد البصمات غير المعالجة: {len(check_in_recs)}")
+                for idx, rec in enumerate(check_in_recs):
+                    _logger.info(f"    بصمة #{idx+1}: {rec.punching_time} | punch_type={rec.punch_type}")
                 new_att=False
                 att_arr={}
                 # save_date=False
@@ -841,6 +845,13 @@ class ZkMachine(models.Model):
                     checkin_t=''
                     checkout=''
                     flag=False
+                    
+                    # 🔍 اكتشاف: إذا كان checkin_read_key == checkout_read_key، استخدم منطق First/Last
+                    use_first_last_logic = (str(self.checkin_read_key) == str(self.checkout_read_key))
+                    
+                    if use_first_last_logic:
+                        _logger.info(f"🔄 تم اكتشاف checkin_key == checkout_key ({self.checkin_read_key}), استخدام منطق First In / Last Out")
+                    
                     if first==0:
                         read_r=0
                         for p_rec in rec_shift:
@@ -852,29 +863,32 @@ class ZkMachine(models.Model):
                     if flag==False:
                         raise ValidationError(_('Invalid Checkin Configuration read %s and configured %s !'%(read_r,self.checkin_read_key)))
                     ins_flag=True
-                    for punch_rec in rec_shift:
-                        if str(punch_rec['punch_type'])=='0' or str(punch_rec['punch_type'])==str(self.checkin_read_key) and ins_flag:
-                            checkin_t=punch_rec['time']
-                            ins_flag=False
+                    for idx, punch_rec in enumerate(rec_shift):
+                        # 🔍 إذا كان checkin_key == checkout_key، نستخدم منطق First In / Last Out
+                        if use_first_last_logic:
+                            # أول بصمة = Check In
+                            if idx == 0 and ins_flag:
+                                checkin_t=punch_rec['time']
+                                ins_flag=False
 
-                            shift_obj=self.env['shift_data'].browse(punch_rec['shift'])
-                            
-                            new_att=att_obj.create({'employee_id': emp[0],
-                                        'check_in': punch_rec['time'],
-                                        'match_shift':punch_rec['shift'],
-                                        'att_shift_rec':punch_rec['shift_rec'].id,
-                                        'expected_check_in':shift_obj.hour_from,
-                                        'expected_check_out':shift_obj.hour_to,
-                                       # 'linked_request':request,
-                                        })
-                        else:
-                            if new_att:
+                                shift_obj=self.env['shift_data'].browse(punch_rec['shift'])
+                                
+                                new_att=att_obj.create({'employee_id': emp[0],
+                                            'check_in': punch_rec['time'],
+                                            'match_shift':punch_rec['shift'],
+                                            'att_shift_rec':punch_rec['shift_rec'].id,
+                                            'expected_check_in':shift_obj.hour_from,
+                                            'expected_check_out':shift_obj.hour_to,
+                                           # 'linked_request':request,
+                                            })
+                                _logger.info(f"✅ تم إنشاء Check In: {punch_rec['time']}")
+                            # آخر بصمة = Check Out
+                            elif idx == len(rec_shift) - 1 and new_att:
                                 delay=0.0
                                 diff=0.0
                                 overtime=0.0
 
                                 checkout=punch_rec['time']
-                                # checkin_t=check_in_recs[0].punching_time
                                 delay,diff,overtime=self.calculate_delay_diff_overtime(punch_rec['shift_rec'],checkin_t,checkout,punch_rec['shift_rec'].hr_shift)
                                 
                                 new_att.write({ 'check_out': checkout,
@@ -883,6 +897,39 @@ class ZkMachine(models.Model):
                                             'act_diff_time':diff,
                                             'act_over_time':overtime,
                                         })
+                                _logger.info(f"✅ تم إنشاء Check Out: {checkout}")
+                        else:
+                            # المنطق الأصلي: استخدام punch_type للتمييز
+                            if str(punch_rec['punch_type'])=='0' or str(punch_rec['punch_type'])==str(self.checkin_read_key) and ins_flag:
+                                checkin_t=punch_rec['time']
+                                ins_flag=False
+
+                                shift_obj=self.env['shift_data'].browse(punch_rec['shift'])
+                                
+                                new_att=att_obj.create({'employee_id': emp[0],
+                                            'check_in': punch_rec['time'],
+                                            'match_shift':punch_rec['shift'],
+                                            'att_shift_rec':punch_rec['shift_rec'].id,
+                                            'expected_check_in':shift_obj.hour_from,
+                                            'expected_check_out':shift_obj.hour_to,
+                                           # 'linked_request':request,
+                                            })
+                            else:
+                                if new_att:
+                                    delay=0.0
+                                    diff=0.0
+                                    overtime=0.0
+
+                                    checkout=punch_rec['time']
+                                    # checkin_t=check_in_recs[0].punching_time
+                                    delay,diff,overtime=self.calculate_delay_diff_overtime(punch_rec['shift_rec'],checkin_t,checkout,punch_rec['shift_rec'].hr_shift)
+                                    
+                                    new_att.write({ 'check_out': checkout,
+                                                'is_process':True,
+                                                'act_delay_time':delay,
+                                                'act_diff_time':diff,
+                                                'act_over_time':overtime,
+                                            })
 
             else: #First check in last checkout
                 check_in_recs=self.env['zk.machine.attendance'].search([('punching_day','=',c_date[0]),('employee_id','=',emp[0]),('is_process','=',False),('machine_ip','=',machine_ip.id)],order='punching_time')
