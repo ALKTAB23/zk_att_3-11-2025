@@ -69,42 +69,38 @@ class LeaveDeductionReport(models.TransientModel):
             record.total_deducted = total_deducted
             record.remaining_balance = total_allocations - total_leaves_taken - total_deducted
             
-            # 5. إنشاء سطور تفصيلية للخصومات
-            self._create_deduction_lines(record, deducted_allocations)
-
-    def _create_deduction_lines(self, record, deducted_allocations):
-        """إنشاء سطور تفصيلية لكل خصم"""
-        # حذف السطور القديمة
-        self.env['leave.deduction.report.line'].search([('report_id', '=', record.id)]).unlink()
-        
-        for allocation in deducted_allocations:
-            att_sheet = allocation.att_sheet_id
+            # 5. إنشاء سطور تفصيلية للخصومات (استخدام command format للـ Transient Model)
+            line_vals = []
+            for allocation in deducted_allocations:
+                att_sheet = allocation.att_sheet_id
+                
+                # حساب تفاصيل الخصم من الـ Attendance Sheet
+                late_hours = att_sheet.late_policy_hours
+                diff_hours = att_sheet.diff_policy_hours
+                absence_hours = att_sheet.tot_absence
+                forget_hours = att_sheet.forget_hours
+                
+                # حساب عدد الساعات في اليوم
+                hours_per_day = att_sheet.employee_id.resource_calendar_id.hours_per_day if att_sheet.employee_id.resource_calendar_id else 8.0
+                
+                # إضافة إلى القائمة
+                line_vals.append((0, 0, {
+                    'att_sheet_id': att_sheet.id,
+                    'sheet_name': att_sheet.name,
+                    'date_from': att_sheet.date_from,
+                    'date_to': att_sheet.date_to,
+                    'late_hours': late_hours,
+                    'diff_hours': diff_hours,
+                    'absence_hours': absence_hours,
+                    'forget_hours': forget_hours,
+                    'total_hours': late_hours + diff_hours + absence_hours + forget_hours,
+                    'deducted_days': allocation.att_sheet_deduct,
+                    'hours_per_day': hours_per_day,
+                    'leave_type_id': allocation.holiday_status_id.id,
+                }))
             
-            # حساب تفاصيل الخصم من الـ Attendance Sheet
-            late_hours = att_sheet.late_policy_hours
-            diff_hours = att_sheet.diff_policy_hours
-            absence_hours = att_sheet.tot_absence
-            forget_hours = att_sheet.forget_hours
-            
-            # حساب عدد الساعات في اليوم
-            hours_per_day = att_sheet.employee_id.resource_calendar_id.hours_per_day if att_sheet.employee_id.resource_calendar_id else 8.0
-            
-            # إنشاء سطر التقرير
-            self.env['leave.deduction.report.line'].create({
-                'report_id': record.id,
-                'att_sheet_id': att_sheet.id,
-                'sheet_name': att_sheet.name,
-                'date_from': att_sheet.date_from,
-                'date_to': att_sheet.date_to,
-                'late_hours': late_hours,
-                'diff_hours': diff_hours,
-                'absence_hours': absence_hours,
-                'forget_hours': forget_hours,
-                'total_hours': late_hours + diff_hours + absence_hours + forget_hours,
-                'deducted_days': allocation.att_sheet_deduct,
-                'hours_per_day': hours_per_day,
-                'leave_type_id': allocation.holiday_status_id.id,
-            })
+            # تعيين السطور باستخدام command format
+            record.deduction_line_ids = line_vals
 
     def action_print_report(self):
         """طباعة التقرير"""
