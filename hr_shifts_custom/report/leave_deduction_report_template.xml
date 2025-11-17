@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Report Definition -->
+    <record id="action_report_leave_deduction" model="ir.actions.report">
+        <field name="name">Leave Deduction Report</field>
+        <field name="model">leave.deduction.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hr_shifts_custom.report_leave_deduction_document</field>
+        <field name="report_file">hr_shifts_custom.report_leave_deduction_document</field>
+        <field name="binding_model_id" ref="model_leave_deduction_report"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Report Template -->
+    <template id="report_leave_deduction_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- Header -->
+                        <div class="text-center mb-4">
+                            <h2>تقرير خصومات الإجازة السنوية</h2>
+                            <h3>Leave Deduction Report</h3>
+                        </div>
+
+                        <!-- Employee Info -->
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>الموظف / Employee:</strong> <span t-field="o.employee_id.name"/>
+                            </div>
+                            <div class="col-6">
+                                <strong>رقم الموظف / ID:</strong> <span t-field="o.employee_id.identification_id"/>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>من / From:</strong> <span t-field="o.date_from"/>
+                            </div>
+                            <div class="col-6">
+                                <strong>إلى / To:</strong> <span t-field="o.date_to"/>
+                            </div>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <table class="table table-sm table-bordered">
+                                    <thead style="background-color: #f0f0f0;">
+                                        <tr>
+                                            <th class="text-center">رصيد الإجازة الكلي<br/>Total Leave Balance</th>
+                                            <th class="text-center">إجمالي الخصومات<br/>Total Deducted</th>
+                                            <th class="text-center">الرصيد المتبقي<br/>Remaining Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center"><strong><span t-field="o.total_leave_balance"/> يوم / days</strong></td>
+                                            <td class="text-center"><strong style="color: red;"><span t-field="o.total_deducted"/> يوم / days</strong></td>
+                                            <td class="text-center"><strong style="color: green;"><span t-field="o.remaining_balance"/> يوم / days</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Details -->
+                        <h4 class="mb-3">تفاصيل الخصومات / Deduction Details</h4>
+                        <table class="table table-sm table-bordered">
+                            <thead style="background-color: #f0f0f0;">
+                                <tr>
+                                    <th class="text-center">الشهر<br/>Month</th>
+                                    <th class="text-center">التأخير<br/>Late (hrs)</th>
+                                    <th class="text-center">الخروج المبكر<br/>Diff (hrs)</th>
+                                    <th class="text-center">الغياب<br/>Absence (hrs)</th>
+                                    <th class="text-center">نسيان البصمة<br/>Forget (hrs)</th>
+                                    <th class="text-center">المجموع<br/>Total (hrs)</th>
+                                    <th class="text-center">الخصم (أيام)<br/>Deducted (days)</th>
+                                    <th class="text-center">نوع الإجازة<br/>Leave Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.deduction_line_ids" t-as="line">
+                                    <td><span t-field="line.sheet_name"/></td>
+                                    <td class="text-right"><span t-field="line.late_hours"/></td>
+                                    <td class="text-right"><span t-field="line.diff_hours"/></td>
+                                    <td class="text-right"><span t-field="line.absence_hours"/></td>
+                                    <td class="text-right"><span t-field="line.forget_hours"/></td>
+                                    <td class="text-right"><strong><span t-field="line.total_hours"/></strong></td>
+                                    <td class="text-right"><strong style="color: red;"><span t-field="line.deducted_days"/></strong></td>
+                                    <td><span t-field="line.leave_type_id.name"/></td>
+                                </tr>
+                            </tbody>
+                            <tfoot style="background-color: #f0f0f0;">
+                                <tr>
+                                    <td><strong>المجموع / Total</strong></td>
+                                    <td class="text-right"><strong><t t-esc="sum(o.deduction_line_ids.mapped('late_hours'))"/></strong></td>
+                                    <td class="text-right"><strong><t t-esc="sum(o.deduction_line_ids.mapped('diff_hours'))"/></strong></td>
+                                    <td class="text-right"><strong><t t-esc="sum(o.deduction_line_ids.mapped('absence_hours'))"/></strong></td>
+                                    <td class="text-right"><strong><t t-esc="sum(o.deduction_line_ids.mapped('forget_hours'))"/></strong></td>
+                                    <td class="text-right"><strong><t t-esc="sum(o.deduction_line_ids.mapped('total_hours'))"/></strong></td>
+                                    <td class="text-right"><strong style="color: red;"><t t-esc="sum(o.deduction_line_ids.mapped('deducted_days'))"/></strong></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- Footer -->
+                        <div class="row mt-5">
+                            <div class="col-6 text-center">
+                                <div class="mt-5 pt-3" style="border-top: 1px solid #000;">
+                                    <strong>توقيع الموظف<br/>Employee Signature</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 text-center">
+                                <div class="mt-5 pt-3" style="border-top: 1px solid #000;">
+                                    <strong>توقيع الموارد البشرية<br/>HR Signature</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <small>
+                                تاريخ الطباعة / Print Date: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                            </small>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

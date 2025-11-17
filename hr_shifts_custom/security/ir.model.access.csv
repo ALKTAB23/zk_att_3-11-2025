@@ -13,3 +13,5 @@ ac2cess_hr_forget_rule,hr_forget_rule_model,model_hr_forget_rule,,1,1,1,1
 ac2cess_hr_forget_rule_line,hr_forget_rule_line_model,model_hr_forget_rule_line,,1,1,1,1
 ac2cess_hr_payroll_accumlate_report,payroll_accumlate_report_model,model_payroll_accumlate_report,,1,1,1,1
 ac2cess_hr_leaves_report_period,leaves_report_period_model,model_leaves_report_period,,1,1,1,1
+access_leave_deduction_report,leave_deduction_report_model,model_leave_deduction_report,,1,1,1,1
+access_leave_deduction_report_line,leave_deduction_report_line_model,model_leave_deduction_report_line,,1,1,1,1

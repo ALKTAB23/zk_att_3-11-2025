@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_leave_deduction_report_form" model="ir.ui.view">
+        <field name="name">leave.deduction.report.form</field>
+        <field name="model">leave.deduction.report</field>
+        <field name="arch" type="xml">
+            <form string="Leave Deduction Report">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group>
+                            <field name="total_leave_balance" readonly="1"/>
+                            <field name="total_deducted" readonly="1"/>
+                            <field name="remaining_balance" readonly="1"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Deduction Details">
+                            <field name="deduction_line_ids" readonly="1">
+                                <tree string="Deductions">
+                                    <field name="sheet_name"/>
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                    <field name="late_hours" sum="Total Late Hours"/>
+                                    <field name="diff_hours" sum="Total Diff Hours"/>
+                                    <field name="absence_hours" sum="Total Absence Hours"/>
+                                    <field name="forget_hours" sum="Total Forget Hours"/>
+                                    <field name="total_hours" sum="Total Hours"/>
+                                    <field name="deducted_days" sum="Total Deducted Days"/>
+                                    <field name="leave_type_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button string="Print Report" name="action_print_report" type="object" class="btn-primary"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_leave_deduction_report" model="ir.actions.act_window">
+        <field name="name">Leave Deduction Report</field>
+        <field name="res_model">leave.deduction.report</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_leave_deduction_report_form"/>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_leave_deduction_report"
+              name="Leave Deduction Report"
+              action="action_leave_deduction_report"
+              parent="hr_attendance.menu_hr_attendance_report"
+              sequence="50"/>
+
+    <!-- إضافة زر في صفحة الموظف -->
+    <record id="view_employee_form_inherit_leave_deduction" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.leave.deduction</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="%(action_leave_deduction_report)d"
+                        type="action"
+                        class="oe_stat_button"
+                        icon="fa-calendar-minus-o"
+                        context="{'default_employee_id': active_id}">
+                    <field string="Leave Deductions" name="name" widget="statinfo"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -9,3 +9,4 @@ from . import shifts_requests
 from . import attendance_sheet_custom
 from . import hr_payroll_custom
 from . import leave_custom
+from . import leave_deduction_report

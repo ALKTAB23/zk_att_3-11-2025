@@ -45,8 +45,10 @@ Version 1.1:
         'views/hr_attendance_sheet_custom_views.xml',
         'views/salary_rules_data.xml',
         'views/hr_leave_type_view.xml',
+        'views/leave_deduction_report_views.xml',
         'wizard/report_payroll_wizard_views.xml',
         'report/report.xml',
+        'report/leave_deduction_report_template.xml',
         'report/accumlate_payrol_report.xml',
         'views/menus.xml',
         
