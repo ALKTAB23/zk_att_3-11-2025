@@ -625,14 +625,25 @@ class ZkMachine(models.Model):
                 
                 if attendance:
                     _logger.info(f"بدء معالجة {len(attendance)} سجل حضور")
+                    _logger.info(f"⚙️ إعدادات الفلترة:")
+                    _logger.info(f"  Check In Key: {self.checkin_read_key}")
+                    _logger.info(f"  Check Out Key: {self.checkout_read_key}")
+                    _logger.info(f"  عدد المستخدمين في الجهاز: {len(users_list)}")
+                    _logger.info(f"  أول 10 user IDs: {users_list[:10]}")
+                    
                     tz = pytz.timezone(self.read_tz)
                     
                     created_count = 0
                     skipped_duplicate = 0
                     skipped_filter = 0
                     skipped_no_employee = 0
+                    skipped_not_in_list = 0
+                    sample_filtered = []
+                    sample_no_employee = []
                     
-                    for each in attendance:
+                    for idx, each in enumerate(attendance):
+                        if idx < 3:
+                            _logger.info(f"🔎 عينة سجل #{idx}: user_id={each.user_id}, punch={each.punch}, time={each.timestamp}")
                         # logging.info("att>>>>>"+str(each.punch)+"__"+str(self.checkin_read_key)+"_")
                         if str(each.punch) == str(self.checkin_read_key) or str(each.punch) == str(self.checkout_read_key):
                             # جهاز البصمة يرجع الوقت المحلي
@@ -703,6 +714,10 @@ class ZkMachine(models.Model):
                     _logger.info(f"📊 إحصائيات الحفظ:")
                     _logger.info(f"  ✅ تم إنشاء: {created_count} سجل")
                     _logger.info(f"  ⏭ تم تجاهل (مكرر): {skipped_duplicate} سجل")
+                    _logger.info(f"  🚫 تم تجاهل (punch type غير مطابق): {skipped_filter} سجل")
+                    if sample_filtered:
+                        _logger.info(f"     عينة من المُفلترة: {sample_filtered}")
+                    _logger.info(f"  ❌ تم تجاهل (user_id ليس في القائمة): {skipped_not_in_list} سجل")
                     _logger.info(f"  🚫 تم تجاهل (punch type غير مطابق): {skipped_filter} سجل")
                     _logger.info(f"  👤 تم تجاهل (موظف غير موجود): {skipped_no_employee} سجل")
                     
