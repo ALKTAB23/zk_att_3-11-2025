@@ -38,6 +38,9 @@ from odoo import api, fields, models,_
 from odoo.exceptions import UserError, ValidationError
 from datetime import datetime, timedelta
 from odoo.addons.base.models.res_partner import _tz_get
+
+_logger = logging.getLogger(__name__)
+
 class HrAttendance(models.Model):
     _inherit = 'hr.attendance'
     is_process=fields.Boolean('is_process',default=False)
@@ -453,8 +456,6 @@ class ZkMachine(models.Model):
         return self._get_float_from_time(convert_to_time)
     def test_device_connection(self):
         """Test device connection and show diagnostic information"""
-        _logger = logging.getLogger(__name__)
-        
         for info in self:
             machine_ip = info.name
             zk_port = info.port_no
@@ -541,7 +542,6 @@ class ZkMachine(models.Model):
     
     def download_attendance(self):
         """تحميل سجلات الحضور من جهاز البصمة مع معالجة شاملة للأخطاء"""
-        _logger = logging.getLogger(__name__)
         _logger.info("=== بدء تحميل سجلات الحضور ===")
         
         zk_attendance = self.env['zk.machine.attendance']
