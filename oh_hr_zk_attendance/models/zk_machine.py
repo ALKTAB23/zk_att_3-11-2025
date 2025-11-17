@@ -690,8 +690,14 @@ class ZkMachine(models.Model):
                                             created_count += 1
                                         else:
                                             skipped_no_employee += 1
+                                            if len(sample_no_employee) < 5:
+                                                sample_no_employee.append(f"user_id={each.user_id}, punch={each.punch}")
+                                else:
+                                    skipped_not_in_list += 1
                         else:
                             skipped_filter += 1
+                            if len(sample_filtered) < 5:
+                                sample_filtered.append(f"user_id={each.user_id}, punch={each.punch}")
                                     # break
                     
                     _logger.info(f"📊 إحصائيات الحفظ:")
