@@ -1,0 +1,41 @@
+#!/bin/bash
+# إصلاح خطأ action_payslip_cancel في hr_payroll_custom.py
+# تشغيل هذا الملف على السيرفر كـ root
+
+ODOO_PATH="/opt/odoo16/custom/hr_shifts_custom"
+FILE="$ODOO_PATH/models/hr_payroll_custom.py"
+
+echo "🔧 إصلاح hr_payroll_custom.py..."
+echo "======================================"
+
+# 1. التحقق من وجود الملف
+if [ ! -f "$FILE" ]; then
+    echo "❌ الملف غير موجود: $FILE"
+    exit 1
+fi
+
+# 2. عمل نسخة احتياطية
+cp "$FILE" "$FILE.backup_$(date +%Y%m%d_%H%M%S)"
+echo "✅ تم عمل نسخة احتياطية"
+
+# 3. إصلاح الخطأ
+sed -i 's/if self\.payslip_id\.move_id:/if self.move_id:/g' "$FILE"
+sed -i 's/self\.payslip_id\.move_id\.sudo()/self.move_id.sudo()/g' "$FILE"
+
+echo "✅ تم إصلاح الكود"
+
+# 4. عرض التغييرات
+echo ""
+echo "📋 التغييرات المطبقة:"
+echo "======================================"
+grep -n "if self.move_id:" "$FILE"
+
+# 5. إعادة تشغيل Odoo
+echo ""
+echo "🔄 إعادة تشغيل Odoo..."
+systemctl restart odoo
+
+echo ""
+echo "✅ تم الإصلاح بنجاح!"
+echo "======================================"
+echo "الرجاء الانتظار 10-15 ثانية لإعادة تشغيل Odoo"
