@@ -37,6 +37,7 @@ Version 1.1:
     ],
     'data': [ 
         'security/ir.model.access.csv',
+        'security/leave_deduction_report_security.xml',
         'views/resource_calendar_custom_views.xml',
         'views/hr_attendance_policy_custom_views.xml',
         'views/hr_employee_contract_custom_views.xml',
