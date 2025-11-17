@@ -134,6 +134,6 @@ class hr_payslip_inherit(models.Model):
 
         # if self.filtered(lambda slip: slip.state == 'done'):
         #     raise UserError(_("Cannot cancel a payslip that is done."))
-        if self.payslip_id.move_id:
-            self.payslip_id.move_id.sudo().button_cancel()
+        if self.move_id:
+            self.move_id.sudo().button_cancel()
         return self.write({'state': 'cancel'})
