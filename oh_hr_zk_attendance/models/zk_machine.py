@@ -558,17 +558,9 @@ class ZkMachine(models.Model):
                                     end_date=str(self.to_date),
                                     policy='range'
                                 )
-                            
-                            # If no records with range, try getting all records to see if device has any data
-                            if not attendance or len(attendance) == 0:
-                                _logger.info("🔍 لم نجد سجلات في النطاق المحدد، محاولة قراءة جميع السجلات...")
-                                all_attendance = conn.get_attendance(policy='all')
-                                if all_attendance and len(all_attendance) > 0:
-                                    _logger.warning(f"⚠ يوجد {len(all_attendance)} سجل في الجهاز، لكن لا شيء في النطاق {self.from_date} إلى {self.to_date}")
-                                    _logger.info(f"  أول سجل متوفر: {all_attendance[0].timestamp}")
-                                    _logger.info(f"  آخر سجل متوفر: {all_attendance[-1].timestamp}")
-                                else:
-                                    _logger.warning("⚠ الجهاز لا يحتوي على أي سجلات حضور على الإطلاق")
+                                
+                                if not attendance or len(attendance) == 0:
+                                    _logger.warning(f"⚠ لا توجد سجلات في النطاق {self.from_date} إلى {self.to_date}")
                         else:
                             _logger.info(f"قراءة السجلات من {self.from_date} فقط (بدون تاريخ نهاية)")
                             attendance = conn.get_attendance()
