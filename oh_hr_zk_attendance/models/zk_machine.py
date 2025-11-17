@@ -362,8 +362,31 @@ class ZkMachine(models.Model):
                     diff=diff_totalminutes-permit_check_out
 
                 
-                # Overtime disabled - Policy rules will handle overtime calculation
-                overtime = 0.0
+                # ✅ Calculate Overtime: الوقت الفعلي بعد وقت الانصراف المتوقع
+                overtime_hours = 0.0
+                if co > ht:  # إذا كان وقت الخروج الفعلي بعد وقت الخروج المتوقع
+                    # احسب الفرق بين الخروج الفعلي والخروج المتوقع (بالساعات)
+                    overtime_hours = self.subtract_two_times_24h(co, ht)
+                    
+                    # permit_check_out هو بالدقائق، نحوله إلى ساعات
+                    permit_check_out_hours = permit_check_out / 60.0
+                    
+                    # طرح permit_check_out من الإضافي (فترة السماح)
+                    if overtime_hours > permit_check_out_hours:
+                        overtime = overtime_hours - permit_check_out_hours
+                    else:
+                        overtime = 0.0
+                    
+                    _logger.info(f"⏰ حساب الإضافي:")
+                    _logger.info(f"  وقت الخروج الفعلي: {co:.2f} ({self.get_time_from_float(co)})")
+                    _logger.info(f"  وقت الخروج المتوقع: {ht:.2f} ({self.get_time_from_float(ht)})")
+                    _logger.info(f"  إضافي خام (ساعات): {overtime_hours:.4f}")
+                    _logger.info(f"  فترة السماح: {permit_check_out:.0f} دقيقة = {permit_check_out_hours:.4f} ساعة")
+                    _logger.info(f"  ⭐ الإضافي النهائي (ساعات): {overtime:.4f}")
+                else:
+                    overtime = 0.0
+                    _logger.info(f"⏰ لا يوجد إضافي: checkout_actual ({co:.2f}) <= expected ({ht:.2f})")
+                    
             return delay, diff, overtime
     def _get_float_from_time(self, time):
         time_type = datetime.strftime(time, "%H:%M:%S")
