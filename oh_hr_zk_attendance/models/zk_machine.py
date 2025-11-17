@@ -691,8 +691,10 @@ class ZkMachine(models.Model):
                     """
                     self._cr.execute(query)
                     current_dates=self.env.cr.fetchall()
+                    _logger.info(f"🔍 عدد الأيام التي تحتوي سجلات غير معالجة: {len(current_dates)}")
                     emp_rec=False
                     for c_date in current_dates:
+                        _logger.info(f"📅 معالجة التاريخ: {c_date[0]}")
                         query = """
                                 select employee_id 
                                 from zk_machine_attendance
@@ -702,15 +704,19 @@ class ZkMachine(models.Model):
                         """%(c_date)
                         self._cr.execute(query)
                         current_employees=self.env.cr.fetchall()
+                        _logger.info(f"👥 عدد الموظفين في هذا التاريخ: {len(current_employees)}")
                         # logging.info("att>>>>>finish Create")
                         for emp in current_employees:
+                            emp_obj = self.env['hr.employee'].browse(emp[0])
+                            _logger.info(f"🔄 معالجة موظف: {emp_obj.name} (ID: {emp[0]})")
                             emp_rec=self.env['hr.contract'].search([('employee_id','=',emp[0]),('state','=','open')])
+                            _logger.info(f"📋 عدد العقود النشطة لـ {emp_obj.name}: {len(emp_rec)}")
                             if len(emp_rec)>0:
                                 for cont in emp_rec:
+                                    _logger.info(f"✅ نقل سجلات الحضور للموظف {emp_obj.name} إلى hr.attendance")
                                     self.register_attendances(emp,cont,c_date,att_obj,info)
                             else:
                                 # Log warning if no active contract found
-                                emp_obj = self.env['hr.employee'].browse(emp[0])
                                 _logger.warning(f"⚠ الموظف {emp_obj.name} (ID: {emp[0]}) ليس لديه عقد نشط. لن يتم نقل سجلات الحضور إلى hr.attendance")
 
                     _logger.info("=== اكتملت عملية تحميل السجلات بنجاح ===")
