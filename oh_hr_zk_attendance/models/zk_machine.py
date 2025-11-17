@@ -552,25 +552,18 @@ class ZkMachine(models.Model):
                     
                     if self.fetch_data_setting == 'range':
                         if self.to_date:
-                            # Check if to_date is in the future
-                            from datetime import date
-                            today = date.today()
-                            if self.to_date > today:
-                                _logger.warning(f"⚠ to_date ({self.to_date}) في المستقبل! سيتم استخدام جميع السجلات بدلاً من ذلك")
-                                attendance = conn.get_attendance(policy='all')
-                            else:
-                                _logger.info(f"قراءة السجلات من {self.from_date} إلى {self.to_date}")
-                                _logger.info(f"إعداد الجلب: fetch_data_setting={self.fetch_data_setting}")
-                                
-                                # Try with range policy first
-                                attendance = conn.get_attendance(
-                                    start_date=str(self.from_date),
-                                    end_date=str(self.to_date),
-                                    policy='range'
-                                )
-                                
-                                if not attendance or len(attendance) == 0:
-                                    _logger.warning(f"⚠ لا توجد سجلات في النطاق {self.from_date} إلى {self.to_date}")
+                            _logger.info(f"📅 قراءة السجلات من {self.from_date} إلى {self.to_date}")
+                            _logger.info(f"⚙️ إعداد الجلب: fetch_data_setting={self.fetch_data_setting}")
+                            
+                            # Fetch attendance strictly within the specified range
+                            attendance = conn.get_attendance(
+                                start_date=str(self.from_date),
+                                end_date=str(self.to_date),
+                                policy='range'
+                            )
+                            
+                            if not attendance or len(attendance) == 0:
+                                _logger.warning(f"⚠️ لا توجد سجلات حضور في النطاق {self.from_date} إلى {self.to_date} - لن يتم جلب سجلات إضافية")
                         else:
                             _logger.info(f"قراءة السجلات من {self.from_date} فقط (بدون تاريخ نهاية)")
                             attendance = conn.get_attendance()
@@ -658,13 +651,13 @@ class ZkMachine(models.Model):
                                 # تحويله إلى UTC للحفظ في قاعدة البيانات
                                 atten_time_utc = local_time.astimezone(pytz.UTC).replace(tzinfo=None)
                                 
-                                _logger.info(f"الوقت من الجهاز (محلي): {atten_time} | "
-                                           f"Timezone: {self.read_tz} | "
-                                           f"UTC للحفظ: {atten_time_utc}")
+                                # عرض عينة فقط للتأكد من تحويل الوقت
+                                if idx < 3:
+                                    _logger.info(f"⏰ تحويل الوقت - محلي: {atten_time} | TZ: {self.read_tz} | UTC: {atten_time_utc}")
                                 
                                 atten_time = atten_time_utc
                             except Exception as e:
-                                _logger.error(f"خطأ في تحويل الوقت: {e}, استخدام الوقت الأصلي")
+                                _logger.error(f"❌ خطأ تحويل الوقت: {e}, استخدام الوقت الأصلي")
                                 atten_time = each.timestamp
                             if user:
                                 # for uid in user:
@@ -718,8 +711,9 @@ class ZkMachine(models.Model):
                     if sample_filtered:
                         _logger.info(f"     عينة من المُفلترة: {sample_filtered}")
                     _logger.info(f"  ❌ تم تجاهل (user_id ليس في القائمة): {skipped_not_in_list} سجل")
-                    _logger.info(f"  🚫 تم تجاهل (punch type غير مطابق): {skipped_filter} سجل")
                     _logger.info(f"  👤 تم تجاهل (موظف غير موجود): {skipped_no_employee} سجل")
+                    if sample_no_employee:
+                        _logger.info(f"     عينة من الموظفين الناقصين: {sample_no_employee}")
                     
                     conn.enable_device()
                     
