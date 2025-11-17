@@ -627,10 +627,14 @@ class ZkMachine(models.Model):
                     _logger.info(f"بدء معالجة {len(attendance)} سجل حضور")
                     tz = pytz.timezone(self.read_tz)
                     
+                    created_count = 0
+                    skipped_duplicate = 0
+                    skipped_filter = 0
+                    skipped_no_employee = 0
+                    
                     for each in attendance:
                         # logging.info("att>>>>>"+str(each.punch)+"__"+str(self.checkin_read_key)+"_")
                         if str(each.punch) == str(self.checkin_read_key) or str(each.punch) == str(self.checkout_read_key):
-                            skipped_filter += 0  # Passed filter
                             # جهاز البصمة يرجع الوقت المحلي
                             # نحتاج نحوله من timezone الجهاز إلى UTC قبل الحفظ في Odoo
                             atten_time = each.timestamp
