@@ -23,17 +23,15 @@
                     <notebook>
                         <page string="Deduction Details">
                             <field name="deduction_line_ids" readonly="1">
-                                <tree string="Deductions">
-                                    <field name="sheet_name"/>
+                                <tree string="Attendance Sheets">
+                                    <field name="name"/>
                                     <field name="date_from"/>
                                     <field name="date_to"/>
-                                    <field name="late_hours" sum="Total Late Hours"/>
-                                    <field name="diff_hours" sum="Total Diff Hours"/>
-                                    <field name="absence_hours" sum="Total Absence Hours"/>
-                                    <field name="forget_hours" sum="Total Forget Hours"/>
-                                    <field name="total_hours" sum="Total Hours"/>
-                                    <field name="deducted_days" sum="Total Deducted Days"/>
-                                    <field name="leave_type_id"/>
+                                    <field name="late_policy_hours" string="Late Hours" sum="Total"/>
+                                    <field name="diff_policy_hours" string="Diff Hours" sum="Total"/>
+                                    <field name="tot_absence" string="Absence Hours" sum="Total"/>
+                                    <field name="forget_hours" string="Forget Hours" sum="Total"/>
+                                    <field name="state"/>
                                 </tree>
                             </field>
                         </page>
