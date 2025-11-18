@@ -71,10 +71,11 @@
                                 <tr>
                                     <th class="text-center">الشهر<br/>Month</th>
                                     <th class="text-center">التأخير<br/>Late (hrs)</th>
-                                    <th class="text-center">الخروج المبكر<br/>Diff (hrs)</th>
+                                    <th class="text-center">الخروج المبكر<br/>Early Leave (hrs)</th>
                                     <th class="text-center">الغياب<br/>Absence (hrs)</th>
                                     <th class="text-center">نسيان البصمة<br/>Forget (hrs)</th>
-                                    <th class="text-center">الحالة<br/>Status</th>
+                                    <th class="text-center">الإضافي<br/>Overtime (hrs)</th>
+                                    <th class="text-center">الإجراء<br/>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -84,7 +85,8 @@
                                     <td class="text-right"><span t-field="sheet.diff_policy_hours"/></td>
                                     <td class="text-right"><span t-field="sheet.tot_absence"/></td>
                                     <td class="text-right"><span t-field="sheet.forget_hours"/></td>
-                                    <td class="text-center"><span t-field="sheet.state"/></td>
+                                    <td class="text-right" style="color: green;"><strong><span t-field="sheet.tot_overtime"/></strong></td>
+                                    <td class="text-center"><span t-field="sheet.sheet_action"/></td>
                                 </tr>
                             </tbody>
                             <tfoot style="background-color: #f0f0f0;">
@@ -94,6 +96,7 @@
                                     <td class="text-right"><strong><t t-esc="'%.2f' % sum(o.deduction_line_ids.mapped('diff_policy_hours'))"/></strong></td>
                                     <td class="text-right"><strong><t t-esc="'%.2f' % sum(o.deduction_line_ids.mapped('tot_absence'))"/></strong></td>
                                     <td class="text-right"><strong><t t-esc="'%.2f' % sum(o.deduction_line_ids.mapped('forget_hours'))"/></strong></td>
+                                    <td class="text-right" style="color: green;"><strong><t t-esc="'%.2f' % sum(o.deduction_line_ids.mapped('tot_overtime'))"/></strong></td>
                                     <td></td>
                                 </tr>
                             </tfoot>
