@@ -75,7 +75,7 @@
                         class="oe_stat_button"
                         icon="fa-calendar-minus-o"
                         context="{'default_employee_id': active_id}">
-                    <field string="Leave Deductions" name="name" widget="statinfo"/>
+                    <span>Leave Deductions</span>
                 </button>
             </xpath>
         </field>
