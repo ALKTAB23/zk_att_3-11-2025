@@ -394,17 +394,21 @@ class ZkMachine(models.Model):
                         rate = overtime_rules.get('wd_rate', 1.0)
                         active_after = overtime_rules.get('wd_after', 0.0)
                         
-                        # ⚠️ ملاحظة مهمة: active_after هو مدة زمنية (بالساعات)، وليس وقت مطلق!
-                        # مثال: active_after = 0.0 → حساب الإضافي مباشرة
-                        #        active_after = 0.5 → حساب الإضافي بعد 30 دقيقة
-                        #        active_after = 16.5 → حساب الإضافي بعد 16.5 ساعة (عادة خطأ في الإدخال!)
-                        
                         _logger.info(f"  📋 قواعد الإضافي من Policy '{policy.name}':")
                         _logger.info(f"     Rate = {rate}x")
                         _logger.info(f"     Apply After = {active_after}h ({self.get_time_from_float(active_after)})")
                         
-                        # تطبيق active_after على مدة الإضافي
-                        if overtime_raw > active_after:
+                        # 🔍 تحذير: إذا كان active_after > 10 ساعات، فهذا خطأ شائع!
+                        # المستخدم قد يدخل الوقت المطلق (مثل 16:30) بدلاً من المدة
+                        if active_after > 10.0:
+                            _logger.error(f"  ❌❌❌ خطأ فادح: Apply After = {active_after}h غير منطقي!")
+                            _logger.error(f"  💡 'Apply After' يجب أن يكون مدة زمنية (duration) وليس وقتاً مطلقاً!")
+                            _logger.error(f"  💡 مثال صحيح: 0.0 (مباشرة), 0.5 (بعد 30 دقيقة), 1.0 (بعد ساعة)")
+                            _logger.error(f"  💡 يبدو أنك أدخلت {self.get_time_from_float(active_after)} كوقت!")
+                            _logger.error(f"  🔧 الحل: اذهب إلى Attendance Policy → Overtime Rules → ضع Apply After = 0:00")
+                            _logger.error(f"  ⚠️ لن يتم احتساب الإضافي حتى تصحح الإعداد!")
+                            overtime = 0.0
+                        elif overtime_raw > active_after:
                             overtime = (overtime_raw - active_after) * rate
                             _logger.info(f"  🧮 الحساب: ({overtime_raw:.4f}h - {active_after}h) × {rate} = {overtime:.4f}h")
                             _logger.info(f"  💰 الإضافي النهائي (بعد Rate): {overtime:.4f} ساعة")
