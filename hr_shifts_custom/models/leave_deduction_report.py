@@ -136,6 +136,10 @@ class LeaveDeductionReport(models.TransientModel):
 
     def action_print_report(self):
         """طباعة التقرير"""
+        self.ensure_one()
+        # تحديث البيانات قبل الطباعة
+        self._compute_deductions()
+        # طباعة التقرير
         return self.env.ref('hr_shifts_custom.action_report_leave_deduction').report_action(self)
 
     def action_view_report(self):

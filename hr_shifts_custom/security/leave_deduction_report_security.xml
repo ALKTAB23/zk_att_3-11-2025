@@ -1,18 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Access rights for Leave Deduction Report -->
-    <record id="access_leave_deduction_report" model="ir.model.access">
-        <field name="name">leave.deduction.report access</field>
+    <!-- Access rights for Leave Deduction Report - User -->
+    <record id="access_leave_deduction_report_user" model="ir.model.access">
+        <field name="name">leave.deduction.report.user</field>
         <field name="model_id" ref="model_leave_deduction_report"/>
+        <field name="group_id" ref="hr.group_hr_user"/>
         <field name="perm_read" eval="1"/>
         <field name="perm_write" eval="1"/>
         <field name="perm_create" eval="1"/>
         <field name="perm_unlink" eval="1"/>
     </record>
 
-    <record id="access_leave_deduction_report_line" model="ir.model.access">
-        <field name="name">leave.deduction.report.line access</field>
+    <record id="access_leave_deduction_report_line_user" model="ir.model.access">
+        <field name="name">leave.deduction.report.line.user</field>
         <field name="model_id" ref="model_leave_deduction_report_line"/>
+        <field name="group_id" ref="hr.group_hr_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+    
+    <!-- Access rights for Leave Deduction Report - Manager -->
+    <record id="access_leave_deduction_report_manager" model="ir.model.access">
+        <field name="name">leave.deduction.report.manager</field>
+        <field name="model_id" ref="model_leave_deduction_report"/>
+        <field name="group_id" ref="hr.group_hr_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record id="access_leave_deduction_report_line_manager" model="ir.model.access">
+        <field name="name">leave.deduction.report.line.manager</field>
+        <field name="model_id" ref="model_leave_deduction_report_line"/>
+        <field name="group_id" ref="hr.group_hr_manager"/>
         <field name="perm_read" eval="1"/>
         <field name="perm_write" eval="1"/>
         <field name="perm_create" eval="1"/>
