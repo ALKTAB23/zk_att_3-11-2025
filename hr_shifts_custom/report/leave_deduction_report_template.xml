@@ -92,10 +92,10 @@
                                         <t t-if="sheet.sheet_action == 'deduct_leave'">
                                             <strong style="color: red;">خصم من الإجازة<br/>Deduct Leave</strong>
                                         </t>
-                                        <t t-elif="sheet.sheet_action == 'deduct_payslip'">
+                                        <t t-if="sheet.sheet_action == 'deduct_payslip'">
                                             خصم من المرتب<br/>Deduct Payslip
                                         </t>
-                                        <t t-else>
+                                        <t t-if="sheet.sheet_action not in ['deduct_leave', 'deduct_payslip']">
                                             لا يوجد<br/>No Action
                                         </t>
                                     </td>
