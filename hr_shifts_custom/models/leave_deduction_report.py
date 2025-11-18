@@ -28,18 +28,16 @@ class LeaveDeductionReport(models.TransientModel):
                                           string='Attendance Sheets',
                                           compute='_compute_deductions')
 
-    @api.onchange('employee_id', 'date_from', 'date_to')
-    def _onchange_filters(self):
-        """Update report data when filters change"""
-        self._compute_deductions()
-    
     @api.depends('employee_id', 'date_from', 'date_to')
     def _compute_deductions(self):
         for record in self:
+            # تهيئة القيم الافتراضية
+            record.total_leave_balance = 0.0
+            record.total_deducted = 0.0
+            record.remaining_balance = 0.0
+            record.deduction_line_ids = [(5, 0, 0)]  # Clear all
+            
             if not record.employee_id or not record.date_from or not record.date_to:
-                record.total_leave_balance = 0.0
-                record.total_deducted = 0.0
-                record.remaining_balance = 0.0
                 continue
             
             # 1. حساب رصيد الإجازة الكلي
@@ -92,8 +90,8 @@ class LeaveDeductionReport(models.TransientModel):
             record.total_deducted = total_deducted
             record.remaining_balance = total_allocations - total_leaves_taken - total_deducted
             
-            # 6. تعيين attendance sheets مباشرة
-            record.deduction_line_ids = att_sheets
+            # 6. تعيين attendance sheets مباشرة باستخدام command format
+            record.deduction_line_ids = [(6, 0, att_sheets.ids)]
 
     def action_print_report(self):
         """طباعة التقرير"""
