@@ -30,8 +30,6 @@
         'views/hr_attendance_policy_view.xml',
         'views/hr_contract_view.xml',
         'views/hr_holidays_view.xml',
-        'views/hr_leave_deduction_report_view.xml',
-        'report/leave_deduction_report_template.xml',
         'data/data.xml',
     ],
 
