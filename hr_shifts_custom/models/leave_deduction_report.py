@@ -62,13 +62,12 @@ class LeaveDeductionReport(models.TransientModel):
             ])
             total_leaves_taken = sum(leaves.mapped('number_of_days'))
             
-            # 3. البحث عن Attendance Sheets التي تم فيها خصم من الإجازة
+            # 3. البحث عن كل Attendance Sheets (بغض النظر عن sheet_action)
             att_sheets = self.env['attendance.sheet'].search([
                 ('employee_id', '=', record.employee_id.id),
                 ('date_from', '>=', record.date_from),
                 ('date_to', '<=', record.date_to),
-                ('state', 'in', ['done', 'confirm']),
-                ('sheet_action', '=', 'deduct_leave')  # فقط التي تم خصمها من الإجازة
+                ('state', 'in', ['done', 'confirm'])
             ], order='date_from desc')
             
             _logger.info(f"📊 عدد Attendance Sheets للموظف {record.employee_id.name}: {len(att_sheets)}")
