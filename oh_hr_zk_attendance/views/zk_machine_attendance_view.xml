@@ -57,17 +57,17 @@
         <field name="name">zk.report.daily.attendance.tree</field>
         <field name="model">zk.report.daily.attendance</field>
         <field name="arch" type="xml" >
-            <tree string="Attendance" create="false" delete="false" >
-            <!-- <tree> -->
+            <tree string="Attendance" create="false" delete="false" decoration-danger="act_delay_time>0" decoration-success="act_over_time>0">
                 <field name="punching_day"/>
                 <field name="name"/>
                 <field name="area_id"/>
                 <field name="punch_type"/>
-                <field name="attendance_typee"/>
                 <field name="punching_time"/>
+                <field name="act_delay_time" string="Late (Hours)" sum="Total Late" widget="float_time"/>
+                <field name="act_diff_time" string="Early Leave (Hours)" sum="Total Early" widget="float_time"/>
+                <field name="act_over_time" string="Overtime (Hours)" sum="Total Overtime" widget="float_time"/>
+                <field name="attendance_typee"/>
                 <field name="address_id"/>
-                <!-- <field name="machine_ip" /> -->
-                <!-- <field name="is_process" /> -->
             </tree>
         </field>
     </record>

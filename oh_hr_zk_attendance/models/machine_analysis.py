@@ -93,6 +93,10 @@ class ReportZkDevice(models.Model):
                                    ('255', 'Check In')], string='Punching Type', help="Select the punch type")
     punching_time = fields.Datetime(string='Punching Time', help="Punching Time")
     is_process = fields.Boolean('Is Process', default=False)
+    act_delay_time = fields.Float('Delay Time')
+    act_diff_time = fields.Float('Diff Time')
+    act_over_time = fields.Float('Overtime')
+    
     def init(self):
         tools.drop_view_if_exists(self._cr, 'zk_report_daily_attendance')
         query = """
@@ -105,7 +109,10 @@ class ReportZkDevice(models.Model):
                     z.area_id as area_id,
                     z.attendance_typee as attendance_typee,
                     z.punching_time as punching_time,
-                    z.punch_type as punch_type
+                    z.punch_type as punch_type,
+                    max(z.act_delay_time) as act_delay_time,
+                    max(z.act_diff_time) as act_diff_time,
+                    max(z.act_over_time) as act_over_time
                 from zk_machine_attendance z
                     join hr_employee e on (z.employee_id=e.id)
                 GROUP BY
