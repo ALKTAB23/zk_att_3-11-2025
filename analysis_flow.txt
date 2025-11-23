@@ -1,0 +1,97 @@
+تحليل سلسلة الحسابات من ZK Device إلى Attendance Sheet:
+
+════════════════════════════════════════════════════════════
+المرحلة 1: تحميل البصمات من ZK Device → hr.attendance
+════════════════════════════════════════════════════════════
+الملف: oh_hr_zk_attendance/models/zk_machine.py
+الدالة: register_attendances() أو download_attendance()
+
+1. يقرأ البصمات من الجهاز
+2. يحدد Check In / Check Out
+3. يستدعي: calculate_delay_diff_overtime(shift, checkin, checkout)
+4. يحفظ في hr.attendance:
+   - act_delay_time (التأخير الفعلي)
+   - act_diff_time (الخروج المبكر الفعلي)
+   - act_over_time (الإضافي الفعلي)
+
+الشروط المطلوبة:
+✓ يجب أن يكون للموظف Shift محدد في التاريخ
+✓ يجب أن يكون الـ Shift مرتبط بـ Attendance Policy
+✓ يجب أن تحتوي Policy على Overtime Rules من نوع "Working Day"
+
+════════════════════════════════════════════════════════════
+المرحلة 2: إنشاء Attendance Sheet → attendance.sheet.line
+════════════════════════════════════════════════════════════
+الملف: hr_shifts_custom/models/attendance_sheet_custom.py
+الدالة: action_attendance_sheet_draft()
+
+1. يقرأ hr.attendance للموظف في الفترة المحددة
+2. ينسخ البيانات إلى att_sheet_line_ids:
+   - overtime = att_rec.act_over_time
+   - act_late_in = att_rec.act_delay_time
+   - act_diff_time = att_rec.act_diff_time
+   - late_in = 0 (سيتم حسابه لاحقاً)
+   - diff_time = 0 (سيتم حسابه لاحقاً)
+
+الشروط المطلوبة:
+✓ يجب أن تكون hr.attendance تحتوي على قيم غير صفرية
+
+════════════════════════════════════════════════════════════
+المرحلة 3: Confirm Sheet → correct_att_sheet_line_ids
+════════════════════════════════════════════════════════════
+الملف: hr_shifts_custom/models/attendance_sheet_custom.py
+الدالة: action_attsheet_confirm()
+
+1. ينسخ att_sheet_line_ids إلى correct_att_sheet_line_ids
+2. يستدعي: calculate_att_data()
+
+════════════════════════════════════════════════════════════
+المرحلة 4: حساب Late/Diff/Overtime بعد تطبيق Rules
+════════════════════════════════════════════════════════════
+الملف: hr_shifts_custom/models/attendance_sheet_custom.py
+الدالة: calculate_att_data()
+
+يمر على كل سطر في correct_att_sheet_line_ids:
+
+A) حساب Overtime:
+   - if line.overtime > 0:
+   - يبحث عن Overtime Rule من نوع workday/weekend/ph
+   - if line.overtime >= rule.active_after:
+   - line.overtime = line.overtime × rule.rate
+   
+الشروط المطلوبة:
+✓ line.line_att_policy_id يجب أن يكون مملوء
+✓ policy.overtime_rule_ids يجب أن تحتوي على قاعدة من نوع workday
+✓ rule.active_after يجب أن يكون <= line.overtime
+
+B) حساب Late In:
+   - if line.act_late_in > 0:
+   - يبحث عن Late Rule حسب Counter و Time Range
+   - if rule.counter == str(no_late) AND
+     (act_late_in >= rule.time AND act_late_in <= rule.time_limit):
+   - line.late_in = act_late_in × rule.rate (أو fix أو rate_fix)
+
+الشروط المطلوبة:
+✓ policy.late_rule_id.line_ids يجب أن يحتوي على قواعد
+✓ rule.counter يجب أن يتطابق مع عدد التأخيرات (1,2,3...)
+✓ act_late_in يجب أن يكون ضمن rule.time → rule.time_limit
+
+C) حساب Diff Time:
+   - if line.act_diff_time > 0:
+   - يبحث عن Diff Rule حسب Counter و Time Range
+   - نفس منطق Late In
+
+الشروط المطلوبة:
+✓ policy.diff_rule_id.line_ids يجب أن يحتوي على قواعد
+✓ rule.counter يجب أن يتطابق
+✓ act_diff_time يجب أن يكون ضمن rule.time → rule.time_limit
+
+════════════════════════════════════════════════════════════
+نقاط الفشل المحتملة:
+════════════════════════════════════════════════════════════
+1. ❌ Attendance Policy غير مرتبطة بالـ Shift
+2. ❌ Overtime Rule غير موجودة أو type ≠ workday
+3. ❌ Late Rule: Counter أو Time Range لا يتطابق
+4. ❌ Diff Rule: Counter أو Time Range لا يتطابق
+5. ❌ hr.attendance تحتوي على قيم صفرية من البداية
+
