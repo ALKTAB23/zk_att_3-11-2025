@@ -572,14 +572,20 @@ class attendance_sheet_custom(models.Model):
                         # active_after هو مدة (بالساعات)، نقارنه مع مدة الإضافي
                         if line.overtime >= current_rule.active_after:
                             no_overtime += 1
-                            overtime += (line.overtime * current_rule.rate)
-                            _logger.info(f"✅ Overtime: {line.overtime}h × Rate {current_rule.rate} = {line.overtime * current_rule.rate}h")
+                            calculated_overtime = line.overtime * current_rule.rate
+                            overtime += calculated_overtime
+                            # ⭐ تحديث overtime في السطر نفسه
+                            line.overtime = calculated_overtime
+                            _logger.info(f"✅ Overtime: {line.overtime}h × Rate {current_rule.rate} = {calculated_overtime}h")
                         else:
-                            _logger.info(f"⚠️ Overtime {line.overtime}h < threshold {current_rule.active_after}h")
+                            # إذا كان الإضافي أقل من العتبة، نضعه صفر
+                            line.overtime = 0
+                            _logger.info(f"⚠️ Overtime {line.overtime}h < threshold {current_rule.active_after}h → Set to 0")
                     elif line.overtime > 0:
+                        # لا توجد قاعدة، نحتفظ بالإضافي كما هو
                         no_overtime += 1
                         overtime += line.overtime
-                        _logger.info(f"📊 Overtime without rule: {line.overtime}h")
+                        _logger.info(f"📊 Overtime without rule: {line.overtime}h (kept as is)")
                 no_plicy_flag = True
                 if line.status == "ab":
                     no_absence += 1
@@ -598,35 +604,58 @@ class attendance_sheet_custom(models.Model):
 
                     # Apply Diff Policy
                     policy = line.line_att_policy_id
+                    _logger.info(f"🕓 Diff Time: employee={att_sheet.employee_id.name}, date={line.date}, act_diff_time={line.act_diff_time}h, policy={policy.name if policy else 'NO POLICY'}")
+                    if not policy:
+                        _logger.warning(f"⚠️ NO Attendance Policy linked to line! Employee: {att_sheet.employee_id.name}, Date: {line.date}")
+                        line.diff_time = 0
+                        continue
+                    if not policy.diff_rule_id or not policy.diff_rule_id.line_ids:
+                        _logger.warning(f"⚠️ NO Diff Rules in policy '{policy.name}'! Employee: {att_sheet.employee_id.name}, Date: {line.date}")
+                        line.diff_time = 0
+                        continue
                     last_counter = 0
                     for rule in policy.diff_rule_id.line_ids:
                         if last_counter < int(rule.counter):
                             last_counter = int(rule.counter)
 
                     for rule in policy.diff_rule_id.line_ids:
+                        _logger.info(f"  🔍 Rule check: counter={rule.counter} vs no_diff={no_diff}, time={rule.time}-{rule.time_limit}, act_diff_time={line.act_diff_time}, match={(rule.counter == str(no_diff) and line.act_diff_time >= rule.time and line.act_diff_time <= rule.time_limit)}")
                         if rule.counter == str(no_diff) and (
                                 line.act_diff_time >= rule.time and line.act_diff_time <= rule.time_limit):
                             no_plicy_flag = False
                             if rule.type == 'fix':
                                 diff_policy += rule.amount
                                 line.diff_time = rule.amount
+                                _logger.info(f"  ✅ Applied FIXED diff rule: diff_time = {rule.amount}h")
                             else:
                                 if rule.type == 'rate':
                                     diff_policy += (line.act_diff_time * rule.rate)
                                     line.diff_time = (line.act_diff_time * rule.rate)
+                                    _logger.info(f"  ✅ Applied RATE diff rule: diff_time = {line.act_diff_time} × {rule.rate} = {line.diff_time}h")
                                 else:
                                     if rule.type == 'rate_fix':
                                         diff_policy += (line.act_diff_time * rule.rate) + rule.amount
                                         line.diff_time = (line.act_diff_time * rule.rate) + rule.amount
+                                        _logger.info(f"  ✅ Applied RATE+FIX diff rule: diff_time = ({line.act_diff_time} × {rule.rate}) + {rule.amount} = {line.diff_time}h")
                     if last_counter > no_diff:
                         no_diff += 1
                     if no_plicy_flag:
                         diff += line.act_diff_time
                         line.diff_time = 0
+                        _logger.warning(f"  ⚠️ NO matching Diff Rule! act_diff_time={line.act_diff_time}h, no_diff={no_diff-1}, set diff_time=0")
                 if line.act_late_in > 0:
 
                     # Apply Late Policy
                     policy = line.line_att_policy_id
+                    _logger.info(f"🕒 Late In: employee={att_sheet.employee_id.name}, date={line.date}, act_late_in={line.act_late_in}h, policy={policy.name if policy else 'NO POLICY'}")
+                    if not policy:
+                        _logger.warning(f"⚠️ NO Attendance Policy linked to line! Employee: {att_sheet.employee_id.name}, Date: {line.date}")
+                        line.late_in = 0
+                        continue
+                    if not policy.late_rule_id or not policy.late_rule_id.line_ids:
+                        _logger.warning(f"⚠️ NO Late Rules in policy '{policy.name}'! Employee: {att_sheet.employee_id.name}, Date: {line.date}")
+                        line.late_in = 0
+                        continue
                     no_plicy_flag = True
                     last_counter = 0
                     for rule in policy.late_rule_id.line_ids:
@@ -634,6 +663,7 @@ class attendance_sheet_custom(models.Model):
                             last_counter = int(rule.counter)
                     _logger.info("__===^^^^^^^^^^^^^^last=_" + str(last_counter))
                     for rule in policy.late_rule_id.line_ids:
+                        _logger.info(f"  🔍 Rule check: counter={rule.counter} vs no_late={no_late}, time={rule.time}-{rule.time_limit}, act_late_in={line.act_late_in}, match={(rule.counter == str(no_late) and line.act_late_in >= rule.time and line.act_late_in <= rule.time_limit)}")
                         if rule.counter == str(no_late) and (
                                 line.act_late_in >= rule.time and line.act_late_in <= rule.time_limit):
                             no_plicy_flag = False
@@ -641,19 +671,23 @@ class attendance_sheet_custom(models.Model):
                             if rule.type == 'fix':
                                 late_policy += rule.amount
                                 line.late_in = rule.amount
+                                _logger.info(f"  ✅ Applied FIXED late rule: late_in = {rule.amount}h")
                             else:
                                 if rule.type == 'rate':
                                     late_policy += (line.act_late_in * rule.rate)
                                     line.late_in = (line.act_late_in * rule.rate)
+                                    _logger.info(f"  ✅ Applied RATE late rule: late_in = {line.act_late_in} × {rule.rate} = {line.late_in}h")
                                 else:
                                     if rule.type == 'rate_fix':
                                         late_policy += (line.act_late_in * rule.rate) + rule.amount
                                         line.late_in = (line.act_late_in * rule.rate) + rule.amount
+                                        _logger.info(f"  ✅ Applied RATE+FIX late rule: late_in = ({line.act_late_in} × {rule.rate}) + {rule.amount} = {line.late_in}h")
                     if last_counter > no_late:
                         no_late += 1
                     if no_plicy_flag:
                         late += line.act_late_in
                         line.late_in = 0
+                        _logger.warning(f"  ⚠️ NO matching Late Rule! act_late_in={line.act_late_in}h, no_late={no_late-1}, set late_in=0")
                 if line.status == 'no_checkin' or line.status == 'no_checkout':
                     no_forget += 1
                     # Apply Late Policy
