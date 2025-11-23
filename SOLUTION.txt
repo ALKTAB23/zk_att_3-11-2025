@@ -1,0 +1,9 @@
+المشكلة: كل الحقول 00:00 لأن hr.attendance القديمة بها act_over_time=0
+
+الحل:
+1. Attendances → HR Attendance
+2. Filter: Employee=IBRA, Check-in Date ≥ 2025-10-01
+3. Select All → Action → Delete
+4. Attendances → ZK Device → Select Device
+5. Download Attendance: من 2025-10-01 إلى 2025-10-31
+6. أنشئ Attendance Sheet جديدة

@@ -384,7 +384,13 @@ class ZkMachine(models.Model):
                     overtime = overtime_raw
                     if match_shift_computed.att_policy_id and overtime_raw > 0:
                         policy = match_shift_computed.att_policy_id
+                        
+                        _logger.info(f"  📋 Attendance Policy: '{policy.name}' (ID={policy.id})")
+                        _logger.info(f"     Total Overtime Rules: {len(policy.overtime_rule_ids)}")
+                        
                         overtime_rules = policy.get_overtime()
+                        
+                        _logger.info(f"  📊 Overtime Rules returned: {overtime_rules}")
                         
                         # تحديد نوع اليوم (workday, weekend, ph)
                         # TODO: يمكن تحسين هذا للتمييز بين workday/weekend/ph
@@ -397,6 +403,12 @@ class ZkMachine(models.Model):
                         _logger.info(f"  📋 قواعد الإضافي من Policy '{policy.name}':")
                         _logger.info(f"     Rate = {rate}x")
                         _logger.info(f"     Apply After = {active_after}h ({self.get_time_from_float(active_after)})")
+                        
+                        if rate == 1.0 and active_after == 0.0:
+                            _logger.warning(f"  ⚠️⚠️⚠️ لا توجد قاعدة Overtime من نوع 'workday' في Policy '{policy.name}'!")
+                            _logger.warning(f"  💡 الحل: Attendances → Configuration → Attendance Policies → {policy.name}")
+                            _logger.warning(f"  💡       → Overtime Rules → أضف قاعدة جديدة:")
+                            _logger.warning(f"  💡       Type=Working Day, Apply After=0:00, Rate=2.00")
                         
                         # 🔍 تحذير: إذا كان active_after > 10 ساعات، فهذا خطأ شائع!
                         # المستخدم قد يدخل الوقت المطلق (مثل 16:30) بدلاً من المدة
@@ -418,7 +430,12 @@ class ZkMachine(models.Model):
                             _logger.warning(f"  ⚠️ تلميح: إذا كنت تريد حساب الإضافي مباشرة، اضبط 'Apply After' على 0:00")
                     else:
                         if not match_shift_computed.att_policy_id:
-                            _logger.warning(f"  ⚠️ لا توجد Attendance Policy مرتبطة - سيُستخدم الإضافي الخام بدون Rate")
+                            _logger.error(f"  ❌❌❌ لا توجد Attendance Policy مرتبطة بالـ Shift!")
+                            _logger.error(f"  💡 الحل: Attendances → Configuration → Shifts → {match_shift_computed.name if match_shift_computed else 'N/A'}")
+                            _logger.error(f"  💡       → ضع 'Attendance Policy' في الشيفت")
+                            overtime = 0.0
+                        elif overtime_raw == 0:
+                            _logger.info(f"  ℹ️ لا يوجد إضافي خام (overtime_raw = 0)")
                     
                     _logger.info(f"⏰ حساب الإضافي:")
                     _logger.info(f"  وقت الخروج الفعلي: {co:.2f} ({self.get_time_from_float(co)})")
