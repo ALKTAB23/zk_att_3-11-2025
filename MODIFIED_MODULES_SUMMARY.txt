@@ -1,0 +1,152 @@
+════════════════════════════════════════════════════════════
+قائمة الموديولات المعدلة في المشروع
+════════════════════════════════════════════════════════════
+
+تم التعديل على موديولين رئيسيين:
+
+════════════════════════════════════════════════════════════
+1️⃣ oh_hr_zk_attendance
+════════════════════════════════════════════════════════════
+الوصف: موديول تكامل ZK Biometric Device مع Odoo
+المسار: /opt/odoo16/custom_addons/zk_att_3-11-2025/oh_hr_zk_attendance/
+
+الملفات المعدلة:
+├── models/
+│   ├── zk_machine.py
+│   │   └── التعديلات:
+│   │       - إصلاح حساب الإضافي (overtime) من الجهاز
+│   │       - إضافة تطبيق Overtime Rate من Policy
+│   │       - إصلاح حساب التأخير والفرق الزمني
+│   │       - إضافة logging تفصيلي للتشخيص
+│   │       - تحذيرات عند إعدادات خاطئة (Apply After > 10h)
+│   │       - التحقق من وجود Attendance Policy والقواعد
+│   │
+│   └── machine_analysis.py
+│       └── التعديلات:
+│           - إضافة حقول act_delay_time, act_diff_time, act_over_time
+│             إلى SQL view zk.report.daily.attendance
+│           - عرض التأخير والإضافي في Attendance Analysis
+│
+└── views/
+    └── zk_machine_attendance_view.xml
+        └── التعديلات:
+            - إضافة أعمدة Late Hours, Early Leave Hours, Overtime Hours
+            - إضافة sum totals للأعمدة
+            - إضافة ألوان (أحمر للتأخير، أخضر للإضافي)
+
+الوظيفة الأساسية:
+- تحميل البصمات من ZK Device
+- حساب delay, diff, overtime لكل سجل حضور
+- حفظ البيانات في hr.attendance
+
+════════════════════════════════════════════════════════════
+2️⃣ hr_shifts_custom
+════════════════════════════════════════════════════════════
+الوصف: موديول Attendance Sheet وإدارة الشيفتات
+المسار: /opt/odoo16/custom_addons/zk_att_3-11-2025/hr_shifts_custom/
+
+الملفات المعدلة:
+├── models/
+│   ├── attendance_sheet_custom.py
+│   │   └── التعديلات:
+│   │       - إصلاح دالة calculate_att_data()
+│   │       - تحديث line.overtime بعد تطبيق Rate
+│   │       - تطبيق Late/Diff/Overtime Rules على كل سطر
+│   │       - إضافة logging تفصيلي لكل قاعدة
+│   │       - إصلاح Windows line endings
+│   │       - تحذيرات عند عدم وجود Policy أو Rules
+│   │
+│   ├── leave_deduction_report.py (ملف جديد)
+│   │   └── الوظيفة:
+│   │       - تقرير خصومات الإجازات من Attendance Sheet
+│   │       - عرض الغياب، التأخير، الخروج المبكر، الإضافي
+│   │       - تمييز الشهور المخصومة بالأزرق
+│   │       - فلترة حسب sheet_action (deduct_leave)
+│   │
+│   └── hr_attendance_policy_custom.py
+│       └── التعديلات:
+│           - إضافة permit_check_in, permit_check_out
+│           - تخصيص Overtime Rule type (workday/weekend/ph)
+│           - تخصيص Late/Diff Rules (counter, time range, type, rate)
+│
+├── views/
+│   ├── leave_deduction_report_views.xml (ملف جديد)
+│   │   └── الوظيفة:
+│   │       - واجهة تقرير خصومات الإجازات
+│   │       - عرض tree view و form view
+│   │       - زر في employee form
+│   │
+│   └── (ملفات view أخرى - بدون تعديلات جوهرية)
+│
+├── report/
+│   └── leave_deduction_report_template.xml (ملف جديد)
+│       └── الوظيفة:
+│           - قالب PDF لتقرير خصومات الإجازات
+│           - عرض تفصيلي بالعربية والإنجليزية
+│
+└── security/
+    └── leave_deduction_report_security.xml (ملف جديد)
+        └── الوظيفة:
+            - صلاحيات الوصول لتقرير الخصومات
+            - hr_user و hr_manager
+
+الوظيفة الأساسية:
+- إنشاء Attendance Sheet من hr.attendance
+- تطبيق Policy Rules على البيانات
+- حساب late_in, diff_time, overtime بعد تطبيق Rate/Counter
+- تقرير خصومات الإجازات
+
+════════════════════════════════════════════════════════════
+ملفات وثائق تم إنشاؤها (للمرجع فقط):
+════════════════════════════════════════════════════════════
+├── CONFIGURATION_CHECKLIST.txt
+├── YOUR_CORRECT_SETTINGS.txt
+├── RULES_DETAILED_GUIDE.txt
+├── CORRECT_LATE_CONFIG.txt
+├── analysis_flow.txt
+├── SOLUTION.txt
+├── diagnostic_policy.py
+└── recalculate_attendance.py
+
+════════════════════════════════════════════════════════════
+ملخص التعديلات حسب الوظيفة:
+════════════════════════════════════════════════════════════
+
+1. حساب الإضافي (Overtime):
+   ✓ oh_hr_zk_attendance/models/zk_machine.py
+   ✓ hr_shifts_custom/models/attendance_sheet_custom.py
+
+2. حساب التأخير (Late In):
+   ✓ oh_hr_zk_attendance/models/zk_machine.py
+   ✓ hr_shifts_custom/models/attendance_sheet_custom.py
+
+3. حساب الخروج المبكر (Diff Time):
+   ✓ oh_hr_zk_attendance/models/zk_machine.py
+   ✓ hr_shifts_custom/models/attendance_sheet_custom.py
+
+4. Attendance Analysis View:
+   ✓ oh_hr_zk_attendance/models/machine_analysis.py
+   ✓ oh_hr_zk_attendance/views/zk_machine_attendance_view.xml
+
+5. تقرير خصومات الإجازات:
+   ✓ hr_shifts_custom/models/leave_deduction_report.py
+   ✓ hr_shifts_custom/views/leave_deduction_report_views.xml
+   ✓ hr_shifts_custom/report/leave_deduction_report_template.xml
+   ✓ hr_shifts_custom/security/leave_deduction_report_security.xml
+
+6. تخصيص Attendance Policy:
+   ✓ hr_shifts_custom/models/hr_attendance_policy_custom.py
+
+════════════════════════════════════════════════════════════
+الموديولات الأساسية المعدلة للترقية:
+════════════════════════════════════════════════════════════
+
+عند تطبيق التعديلات على الخادم، يجب ترقية:
+
+1. oh_hr_zk_attendance
+2. hr_shifts_custom
+
+الأمر:
+Apps → oh_hr_zk_attendance → Upgrade
+Apps → hr_shifts_custom → Upgrade
+
