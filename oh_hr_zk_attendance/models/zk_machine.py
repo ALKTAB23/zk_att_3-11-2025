@@ -269,8 +269,13 @@ class ZkMachine(models.Model):
         return False
     def get_time_from_float(self, float_type):
         str_off_time = str(float_type)
-        official_hour = str_off_time.split('.')[0]
-        official_minute = int(round(round(float("0." + str_off_time.split('.')[1]),6)*60))
+        parts = str_off_time.split('.')
+        official_hour = parts[0]
+        # إذا كان رقم صحيح (مثل 0 أو 1)، الدقائق = 0
+        if len(parts) > 1:
+            official_minute = int(round(round(float("0." + parts[1]),6)*60))
+        else:
+            official_minute = 0
         if official_minute>=60:
             official_minute=0
         str_off_time = official_hour + ":" + str(official_minute)
